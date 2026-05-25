@@ -2,8 +2,8 @@ services:
   - type: web
     name: yantu
     env: python
-    buildCommand: cd 研途 && pip install -r backend/requirements.txt && python backend/manage.py collectstatic --noinput
-    startCommand: cd 研途 && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
+    buildCommand: pip install -r backend/requirements.txt && python backend/manage.py collectstatic --noinput
+    startCommand: gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: backend.settings
