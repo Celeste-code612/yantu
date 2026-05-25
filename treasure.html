@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>科研工作台 | 科研宝藏库</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ── 与科研工作台完全一致的风格 ── */
+        :root {
+            --primary: #2D5A7B;
+            --primary-light: #4A7A9B;
+            --primary-dark: #1E4060;
+            --secondary: #E8F0F5;
+            --accent: #E07B54;
+            --success: #5B9A6B;
+            --warning: #D4A84B;
+            --danger: #C75B5B;
+            --text-primary: #2C3E50;
+            --text-secondary: #6B7C8A;
+            --text-muted: #9CA3AF;
+            --bg-main: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --bg-sidebar: #FFFFFF;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --shadow-sm: 0 1px 3px rgba(45, 90, 123, 0.04);
+            --shadow-md: 0 2px 8px rgba(45, 90, 123, 0.06);
+            --shadow-lg: 0 4px 16px rgba(45, 90, 123, 0.08);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --mono: 'JetBrains Mono', monospace;
+            --serif: 'Noto Serif SC', serif;
+            --sans: 'Noto Sans SC', 'PingFang SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-main); color: var(--text-primary); font-family: var(--sans); overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::selection { background: var(--primary); color: white; }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 64px;
+            background: var(--bg-card); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 28px; z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+        .navbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--serif); font-size: 20px; font-weight: 600;
+            color: var(--primary); text-decoration: none;
+        }
+        .navbar-logo svg { width: 30px; height: 30px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .navbar-nav { display: flex; gap: 6px; margin-left: 40px; }
+        .nav-link {
+            padding: 8px 18px; font-size: 14px; font-weight: 500;
+            color: var(--text-secondary); border-radius: 30px;
+            cursor: pointer; transition: var(--transition); text-decoration: none;
+        }
+        .nav-link:hover { background: var(--secondary); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
+        .nav-search { margin-left: auto; margin-right: 12px; position: relative; }
+        .nav-search input {
+            background: var(--bg-main); border: 1px solid var(--border);
+            padding: 8px 12px 8px 34px; border-radius: 30px; font-size: 13px;
+            width: 220px; transition: var(--transition); outline: none;
+        }
+        .nav-search input:focus { width: 260px; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(45,90,123,0.1); }
+        .nav-search svg {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            width: 14px; height: 14px; color: var(--text-muted);
+        }
+        /* 主布局 */
+        .shell { padding-top: 64px; display: flex; min-height: calc(100vh - 64px); }
+        /* 左侧分类面板 */
+        .sidebar {
+            position: sticky; top: 64px; width: 260px; flex-shrink: 0;
+            height: calc(100vh - 64px); overflow-y: auto;
+            background: var(--bg-card); border-right: 1px solid var(--border);
+            padding: 24px 20px;
+        }
+        .filter-section { margin-bottom: 28px; }
+        .filter-title {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px;
+        }
+        .filter-options { display: flex; flex-direction: column; gap: 4px; }
+        .f-opt {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; border-radius: var(--radius-md);
+            font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: var(--transition);
+        }
+        .f-opt:hover { background: var(--secondary); color: var(--primary); }
+        .f-opt.active { background: var(--secondary); color: var(--primary); font-weight: 500; }
+        .f-opt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); flex-shrink: 0; }
+        .f-opt.active .f-opt-dot { background: var(--primary); }
+        .f-opt-handle {
+            font-size: 12px; color: var(--text-muted); cursor: grab;
+            margin-left: auto; flex-shrink: 0; user-select: none;
+            opacity: 0; transition: opacity 0.15s;
+        }
+        .f-opt:hover .f-opt-handle { opacity: 1; }
+        .f-opt.dragging { opacity: 0.4; background: var(--secondary); }
+        .f-opt.drag-over { border: 2px dashed var(--primary); }
+
+        /* 主内容区 */
+        .main { flex: 1; overflow: hidden; padding: 0 28px 40px 28px; }
+        /* 英雄区域 */
+        .hero {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            padding: 24px 32px; margin: 24px 0 28px 0;
+            display: flex; align-items: center; gap: 24px;
+            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);
+        }
+        .hero-icon { width: 100px; height: 100px; object-fit: contain; flex-shrink: 0; }
+        .hero-text { flex: 1; }
+        .hero-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text-primary); }
+        .hero-sub { font-size: 13px; color: var(--text-secondary); margin-top: 6px; line-height: 1.5; }
+        .hero-stats { display: flex; gap: 28px; margin-top: 14px; }
+        .stat-item { text-align: center; }
+        .stat-num { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--primary); line-height: 1; }
+        .stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        /* 工具栏 */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;
+            background: var(--bg-card); padding: 14px 20px; border-radius: var(--radius-lg); border: 1px solid var(--border-light); }
+
+        /* 卡片网格 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        /* 工具卡片 - 与竞赛卡片风格统一 */
+        .tool-card {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light); transition: var(--transition);
+            overflow: hidden; animation: fadeInUp 0.3s ease;
+            display: flex; flex-direction: column;
+        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .tool-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border); }
+        .urgency-bar { height: 4px; width: 100%; }
+        .urgency-blue { background: linear-gradient(90deg, var(--primary-light), #60a5fa); }
+        .urgency-green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .urgency-orange { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .urgency-purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .urgency-teal { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+        .urgency-pink { background: linear-gradient(90deg, #ec4899, #f472b6); }
+        .card-inner { padding: 18px 20px; display: flex; flex-direction: column; flex: 1; }
+        .card-header {
+            padding: 16px 20px; background: linear-gradient(135deg, #EDF2F8 0%, #FFFFFF 100%);
+            border-bottom: 1px solid var(--border-light);
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .card-header-left { flex: 1; }
+        .card-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+        .badge {
+            font-size: 11px; font-weight: 600; padding: 3px 10px;
+            border-radius: 30px; background: var(--secondary); color: var(--primary);
+        }
+        .tool-name { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+        .tool-brief {
+            font-size: 13px; color: var(--text-secondary); line-height: 1.55;
+        }
+        .card-body { padding: 16px 20px; flex: 1; display: flex; flex-direction: column; }
+        .tool-functions {
+            font-size: 13px; color: var(--text-secondary);
+            background: #f8fafc; padding: 16px 18px;
+            border-radius: var(--radius-md); margin-bottom: 12px;
+            line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+            max-height: 220px; overflow-y: auto;
+            font-family: var(--sans);
+            border: 1px solid #e2e8f0;
+        }
+        /* 功能描述格式化排版 - 一级标题加粗突出 */
+        .tool-functions strong {
+            color: #1e40af; font-size: 14px; font-weight: 700;
+            display: block; padding-top: 5px; margin-top: 4px; margin-bottom: 1px;
+            line-height: 1.5; letter-spacing: 0.5px;
+        }
+        .tool-functions strong:first-child { padding-top: 0; margin-top: 0; }
+        .tool-functions br {
+            line-height: 0.6;
+        }
+        .func-section-break {
+            display: block; height: 0; margin: 6px 0;
+            border-bottom: 1px dashed #e2e8f0;
+        }
+        .func-sub-item {
+            display: block; padding-left: 24px; margin: 0; line-height: 1.3;
+            position: relative; text-indent: 0;
+        }
+        .func-sub-item::before {
+            content: '•'; position: absolute; left: 8px; top: 0;
+            color: var(--accent); font-weight: 700; font-size: 14px;
+        }
+        .func-sub-item + br {
+            display: none;
+        }
+         .tool-functions strong + br {
+        display: none;
+        }
+        .func-text {
+            display: block; line-height: 1.7;
+        }
+        .func-paragraph {
+            display: block; text-indent: 2em; margin: 6px 0; line-height: 1.7;
+        }
+        .tool-functions .highlight {
+            background: #fef3c7; color: #d97706; padding: 2px 6px;
+            border-radius: 3px; font-weight: 600;
+        }
+        .tool-functions .code {
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            background: #1e293b; color: #e2e8f0;
+            padding: 4px 8px; border-radius: 4px;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .tool-functions {
+                padding: 12px 14px; font-size: 12px;
+                line-height: 1.8;
+            }
+            .func-sub-item {
+                padding-left: 20px;
+            }
+            .func-sub-item::before {
+                left: 6px;
+            }
+        }
+        .tool-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .tag {
+            padding: 3px 10px; border-radius: 20px; font-size: 11px;
+            background: var(--secondary); color: var(--primary); font-weight: 500;
+            border: 1px solid transparent; transition: var(--transition);
+        }
+        .tag:hover { background: #dbeafe; }
+        .tool-link { font-size: 12px; word-break: break-all; margin-top: auto; }
+        .tool-link a { color: var(--primary); text-decoration: none; transition: var(--transition); }
+        .tool-link a:hover { color: var(--primary-dark); text-decoration: underline; }
+        .card-footer {
+            padding: 12px 20px 16px; border-top: 1px solid var(--border-light);
+            display: flex; justify-content: flex-end;
+        }
+        .btn-detail {
+            background: var(--primary); border: 1px solid var(--primary);
+            padding: 7px 18px; border-radius: 20px; font-size: 12px;
+            cursor: pointer; color: #fff; transition: var(--transition);
+        }
+        .btn-detail:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+        .fav-btn {
+            background: transparent; border: none; cursor: pointer; color: var(--text-muted);
+            transition: var(--transition); font-size: 0; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .fav-btn::after { font-size: 20px; content: "☆"; color: var(--text-muted); }
+        .fav-btn.on::after { content: "★"; color: #f59e0b; }
+        .fav-btn:hover::after { color: #f59e0b; }
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 10px 24px;
+            border-radius: 40px; font-size: 13px; z-index: 2000;
+            opacity: 0; transition: 0.2s ease; pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+        .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+        .page-btn { padding: 8px 14px; border: 1px solid var(--border); background: white; border-radius: var(--radius-md); cursor: pointer; font-size: 13px; transition: var(--transition); }
+        .page-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+
+        /* 弹窗样式 - 与竞赛页一致 */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease; visibility: hidden; opacity: 0; transition: 0.2s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-overlay.active { visibility: visible; opacity: 1; }
+        .modal {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            width: 90%; max-width: 680px; max-height: 85vh;
+            overflow-y: auto; padding: 28px 32px;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal h3 { font-family: var(--serif); font-size: 19px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .modal p, .modal span, .modal a { font-family: var(--sans); font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+        .modal strong { font-weight: 600; color: var(--text-primary); }
+        .modal .func-sub-item {
+            display: block; padding-left: 20px; margin: 0 0 2px; line-height: 1;
+            position: relative;
+        }
+        .modal .func-sub-item::before {
+            content: '•'; position: absolute; left: 6px; top: 0;
+            color: var(--accent); font-weight: bold;
+        }
+        .modal-close {
+            float: right; cursor: pointer; font-size: 24px; color: var(--text-muted);
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .modal-close:hover { background: var(--secondary); color: var(--text-primary); }
+        @media (max-width: 768px) { .sidebar, .navbar-nav, .nav-search { display: none; } .main { padding: 0 16px 28px; } }
+    </style>
+</head>
+<body>
+<script>
+(function(){if(localStorage.getItem('isLoggedIn')!=='true'){window.location.href='index.html';}})();
+</script>
+<nav class="navbar">
+        <a class="navbar-logo" href="workspace.html">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"><path d="M16 3L3 9v14h26V9L16 3z"/><path d="M12 28V18h8v10"/><path d="M3 9l13 6 13-6"/></svg>
+            研途
+        </a>
+        <div class="navbar-nav">
+            <a class="nav-link" href="workspace.html">工作台</a>
+            <a class="nav-link active" href="treasure.html">科研宝藏库</a>
+            <a class="nav-link" href="competition.html">竞赛雷达</a>
+            <a class="nav-link" href="favorites.html">我的收藏</a>
+        </div>
+        <div class="nav-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="globalSearch" placeholder="搜索工具、标签...">
+        </div>
+        <button class="nav-logout-btn" onclick="if(localStorage.removeItem('isLoggedIn'),localStorage.removeItem('username'),1){fetch('/api/auth/logout/',{method:'POST'});window.location.href='index.html?logout=1';}" title="退出登录" style="padding:6px 14px;font-size:13px;font-weight:500;color:#6B7C8A;background:none;border:1px solid #E2E8F0;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出</span>
+        </button>
+    </nav>
+<div class="shell">
+    <aside class="sidebar">
+        <div class="filter-section"><div class="filter-title">工具分类</div><div class="filter-options" id="categoryMenu"></div></div>
+        <button class="reset-btn" id="resetAll" onclick="resetCategory()">↺ 重置筛选</button>
+    </aside>
+    <div class="main">
+        <div class="hero">
+            <img src="1.png" alt="hero" class="hero-icon">
+            <div class="hero-text">
+                <div class="hero-title">科研宝藏库</div>
+                <div class="hero-sub">收录文献检索、查重降重、数据分析、科研绘图、AI写作、翻译、代码等多种大类科研工具</div>
+                <div class="hero-stats">
+                    <div class="stat-item"><div class="stat-num" id="statTotal">—</div><div class="stat-label">工具总数</div></div>
+                    <div class="stat-item"><div class="stat-num" style="color:var(--success)" id="statCats">—</div><div class="stat-label">分类数</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div><span style="margin-right:8px;">每页显示</span><select id="pageSizeSelect" class="page-size-select"><option value="20">20</option><option value="40">40</option><option value="60">60</option></select></div>
+        </div>
+        <div id="toolsContainer" class="card-grid"></div>
+        <div id="pagination" class="pagination"></div>
+        <div id="emptyMessage" class="empty-state" style="display:none">没有找到相关科研工具，试试其他关键词吧~</div>
+    </div>
+</div>
+<div id="detailModal" class="modal-overlay"><div class="modal"><span class="modal-close" onclick="closeModal()">&times;</span><h3 id="modalTitle"></h3><div id="modalCategory" style="color:var(--primary); margin:8px 0 12px; font-size:13px;"></div><p><strong>简介：</strong><br><span id="modalBrief"></span></p><p><strong>主要功能与服务：</strong><br><span id="modalFunctions" style="white-space:pre-wrap;"></span></p><p><strong>标签：</strong> <span id="modalTags"></span></p><p><strong>网址：</strong><br><a id="modalUrl" href="#" target="_blank" style="color:var(--primary);"></a></p></div></div>
+
+<script>
+// ======================= 中文文献检索完整数据 =======================
+// 基于用户提供的表格，完整收录中文文献检索类别所有工具（从中国知网到Open Access Library）
+const toolsData = [
+    { category: "中文文献检索", name: "中国知网（CNKI）", brief: "全球最大的中文学术电子资源平台，收录期刊、学位论文、会议论文、报纸、年鉴、专利、标准等，覆盖所有学科，数据更新较快。", functions: "1.文献检索\n①一框式快速检索、高级检索（可组合多个条件）\n②检索结果可按主题、学科、作者、机构分组，按被引、下载、时间等排序\n③“知网节”功能链接相关文献、作者、机构，形成知识网络\n2.查重查AI率\n①2022年起对个人开放，1.5元/千字\n②查重报告通常10-30分钟内完成，高峰期可能稍有延迟\n3.数据分析\n①引文数据库：看某篇论文被哪些论文引用\n②经济社会大数据平台：统计年鉴、行业数据\n③学术精要：提供高被引论文评价报告\n4.AI工具（CNKI AI）\n①知识问答\n②文献智能研读\n③辅助写作", url: "https://www.cnki.net/", tags: "中文文献" },
+    { category: "中文文献检索", name: "万方数据知识服务平台", brief: "国内最大的中文学术资源平台之一，医学、工程技术、计算机科学领域资源丰富，学位论文收录量大。", functions: "1.文献检索\n①一框式快速检索、高级检索（可组合多个条件）\n②检索结果可按学科、年份、作者、机构、基金分组，按相关度、被引、出版时间排序\n③“知识脉络”可分析关键词在不同年份的研究热度趋势\n2.查重查AI率（万方检测）\n①面向个人开放，支持学术论文、学位论文、科研成果等文本查重， 3元/千字\n②可自建个人比对库，查重报告通常几分钟内完成\n3.数据分析\n①引用统计：可查看单篇论文的总被引频次和参考文献\n②期刊评价：提供期刊影响因子、核心收录情况（基于中国科技期刊引证报告）\n③学者成果库：学者可认领成果，查看个人发文量和被引情况\n4.AI工具\n①万方选题：基于大数据和AI算法，分析学科热点，推荐选题方向\n②万方分析：支持机构、学科、作者的多维度科研绩效分析\n③智能投稿：根据论文关键词和摘要，推荐匹配的学术期刊", url: "https://www.wanfangdata.com.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "维普网", brief: "以《中文科技期刊数据库》为核心，涵盖期刊、学位论文、会议论文、报纸、专利及外文期刊等十类文献资源。", functions: "1.文献检索\n①一框式快速检索、高级检索（可组合题名、关键词、作者、机构等）\n②检索结果可按年份、学科、期刊、作者分组，按时间、被引量排序\n③“文献细览”可查看参考文献与引证文献，支持自动聚类\n2.查重（维普论文检测系统）\n①面向个人及机构开放，采用MTE技术，比对库涵盖期刊、学位、会议等\n②提供详细检测报告，支持批量检测，价格约3元/千字\n3.数据分析\n①期刊评价：提供《中国科技期刊引证报告》核心期刊指标\n②学科分析：基于大数据的学科热点趋势和机构科研产出对比\n4.AI工具（维普智能服务）\n①智能选题：基于海量文献推荐研究热点和前沿方向\n②调研综述：一键生成论文综述，辅助快速了解研究现状\n③科研对话：基于相关文献，回答有依据\n④文库管理：创建私有文献库，支持手动上传、外部导入\n⑤投稿选刊：利用大数据智能匹配并推荐合适的投稿期刊", url: "https://www.cqvip.com/", tags: "中文文献" },
+    { category: "中文文献检索", name: "超星数字图书馆", brief: "拥有数百万册电子图书、13亿余页全文及16万集学术视频，通过读秀、超星发现提供知识服务。", functions: "1.文献检索\n①统一检索与知识挖掘：通过“读秀”及“超星发现”实现中文图书全文检索、知识点检索和一站式跨库检索；发现系统基于近10亿条元数据分析学术趋势、可视化知识关联\n②分面搜索与结果排序：采用分面搜索技术，用户可根据需要对检索结果进行任意维度的组配、精炼检索和自由扩检，结果可按相关性、学术性、时效性和可获得性等需求多角度展示\n③多渠道深度阅读与下载：需使用超星阅览器（SSReader）进行下载和全文阅读，同时支持移动端、在线及文本格式的阅读方式\n2.查重查AI率（大雅相似度分析）\n①基于独特的中文图书全文优势进行相似度比较\n②支持AIGC（AI生成内容）检测\n③超星账号通常可获5次免费检测机会，检测对象为学位论文、拟发表论文等\n3.数据分析（超星发现系统）\n①引文分析与知识关联分析：完整揭示图书、期刊、学位等不同文献类型之间的引证关系，并可构建可视化的知识关联图谱，帮助发现跨学科研究和核心作者\n②学术趋势分析：支持单一或同类主题的学术产出对比与生长趋势分析，帮助把握研究起点、热点与兴衰\n4. AI工具\n①智能文献服务与个性化推荐：支持24小时智能问答、个性化推荐和辅助阅读\n②AI深度研究与写作支持：AI检索可梳理文献脉络并撰写综述\n③跨语言学术阅读与机器阅读：提供超星翻译（双语阅读）及机器阅读（快速归纳知识点）功能\n④智能文献传递：AI赋能百链，提供更精准智能的稀缺文献传递", url: "https://www.chaoxing.com/", tags: "中文文献" },
+    { category: "中文文献检索", name: "PubScholar公益学术平台", brief: "中国科学院联合多家单位打造的免费学术资源服务系统，提供海量OA资源。", functions: "1.资源规模：目前平台可检索的元数据资源量约1.9亿条，包括科技论文元数据约1亿条，科技专利元数据约9,120万条，科学数据元数据约58万条。可免费获取的全文资源量约8,623万篇，包括科技论文全文数据约2,595万篇，专利全文数据约6,028万篇。\n2.AI文献服务（平台核心特色功能）\n①AI增强检索：融合AI大模型的智能检索系统，帮助精准定位所需文献\n②智能综述：以自然语言对话形式，基于海量文献自动生成研究领域的综述报告\n③文献精读：利用AI大模型快速捕捉文献核心要点，提升阅读效率\n④集成翻译引擎：集成科大讯飞翻译引擎，支持中英互译\n3.学术服务\n①科技头条：根据WOS学科分类，遴选学科领域内的高质量期刊，由AI大模型辅助生成领域每日重要科技动态，通过个人订阅实现个性化推送，方便用户及时获取前沿进展\n②个人学术成果管理（学术名片） ：自动汇聚学者的学术成果，支持高效认领与个性化管理，提供智能统计功能，方便用户在线维护个人学术成果库并开放共享\n③科研社区交流：支持科研团体构建本领域的学术交流社区，提供学术热点讨论、垂直问答、期刊约稿等特色功能\n④预印本同行评审：支持科研团体基于预印本论文开展同行评审，营造开放、透明、公正的学术交流生态\n4.文献检索发现\n①提供集成检索发现功能，可按学科、文献类型等多维度筛选检索结果，并可对可获取全文的资源进行多途径导航\n②引证关系分析：直观展示论文的学术影响力\n③支持一键导出BibTeX、EndNote等引用格式，提升文献管理效率", url: "https://pubscholar.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "NSTL国家科技图书文献中心", brief: "国家科技图书文献中心，面向全国提供公益科技文献信息服务。", functions: "1.资源规模：外文印本文献年度发订品种约2.4万种，其中外文期刊约1.5万种，外文会议录等文献约9000种；面向全国开通网络版外文现刊400余种，回溯期刊3589种，OA学术期刊14000余种等\n2.文献检索\n①提供中外文期刊、会议录、学位论文、科技报告、专利、标准、计量规程等类型的文献检索\n②非注册用户可免费浏览题录、文摘等信息，检索为开放服务\n③注册用户可获取更详细的题录信息，并对关注文献请求全文\n3.文献传递（核心免费服务）\n①2025年11月1日起，NSTL网络服务系统开展的全文传递服务对所有用户全面停止收费\n②可在线检索并免费下载中外文期刊论文、会议录、学位论文、科技报告等文献资源\n③提供覆盖全国的“1+9+N”文献信息服务体系，面向全国提供普惠的科技文献信息服务\n4.AI助手\n①多篇文献对比分析智能体\n②深度研究智能体\n③学术图片解读智能体", url: "https://www.nstl.gov.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国科技论文在线", brief: "教育部主办，国内首家官方在线发表科技论文的公益性平台，独创“先发布，后评审”机制。", functions: "1.文献检索\n①平台收录近千家科技期刊、逾130万篇各领域科技论文全文，均支持免费下载\n②支持按标题、作者等字段进行检索，用户可根据需要在“首发论文库”等多个资源库中进行检索\n2.论文首发与评议（核心机制）\n① “先发布，后评审”：作者自愿投稿，论文经初审后最快可在7个工作日内在线首发\n② 发布后，作者可自愿选择请同行专家对论文进行评价，其评价意见会及时公布在网站中\n③其网上发表的论文已被全国多所高校认可，可用于毕业或职称评定\n3.特色期刊：《中国科技论文在线精品论文》：该电子期刊从平台发布的优秀科技论文中精选而出，秉持开放获取理念，主要报道自然科学领域的最新研究成果\n4.学者服务与个性功能\n①注册用户分为两类：简易注册用户可使用除投稿首发论文以外的所有功能，包括投稿、评论、定制、添加私人标签、收藏资讯、加入学术群组等个性化功能；完善个人信息后可获得首发论文投稿权限\n②非注册用户只能以访客身份，进行部分检索、浏览和下载", url: "https://paper.edu.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国科学院文献情报中心", brief: "ScienceChina集成CSCD引文库，提供查收查引与AI星火助手。", functions: "1.文献检索\n①中国科学引文数据库（CSCD）：收录我国数学、物理、化学、天文学、地学、生物学等千余种科技核心期刊，提供引文索引功能，可迅速查询某篇科技文献被引用的详细情况\n②中国科学院学位论文库：收录自1983年以来中国科学院授予的博士、硕士学位论文及博士后出站报告，涵盖数学、物理、化学、地球科学、生物科学等学科领域\n③文献传递服务：通过dds.las.ac.cn系统为中科院内及企业研究人员提供期刊、图书章节、会议文献、科技报告等全文查询和传递服务\n2.查收查引与情报查证\n①权威查新资质：文献中心1994年被原国家科委批准为一级科技查新咨询单位，出具的查新报告在各级别的成果鉴定和开题立项中均具有权威性\n②收录引证检索：通过SCI、SSCI、EI、ESI、CSCD等国内外评价类数据库，查询个人或团队的代表性论著收录和引用情况，为职称评定、项目申报、人才评价等提供第三方检索报告\n③专题与委托服务：可受理国家级、省部级等各级科研项目的开题立项、成果鉴定、成果报奖等的查新委托，也可提供开题文献跟踪、主题态势分析、专利检索分析等定制化情报服务\n3.AI工具及移动知识服务\n① 星火科研助手（sciai.las.ac.cn） ：文献中心与科大讯飞联合研发的智能知识服务平台，提供成果调研、论文研读和学术写作三大功能，中科院用户不受使用次数限制\n② 中国科讯移动平台 ：文献中心基于移动互联网的知识服务品牌，整合中科院引进数字科技文献资源，支持移动端文献检索、全文阅读、期刊浏览和科技情报获取", url: "https://www.las.ac.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "北大法宝", brief: "中国第一个法律数据库，涵盖法律法规、司法案例、法学期刊等。", functions: "1.核心数据库\n包括法律法规库、司法案例库、法学期刊库、检察文书库、行政处罚库、英文译本库、法宝律师库等。支持标题、全文、发文文号等多种检索方式，可按效力级别、案由、法院层级、年份等筛选\n2.法宝联想（独创特色）\n平台最核心的特色功能，在各子库之间建立法规、案例、期刊等信息的双向链接。浏览法规某一条款时，系统自动关联引用该条款的案例、期刊、释义；浏览案例时，自动关联涉及的法律法规和同类判例。实现一次检索，获得与检索结果相关的各类法律信息\n3.法宝之窗与法宝引证码\n阅读法规或案例时，鼠标悬停于引用的法条上即时显示该法条具体内容和关联信息，无需跳转。数据库内每份文献均有独一无二的法宝引证码，便于学术引用和成果管理\n4.AI工具\n①法宝律爱多：融合法宝数据库与大模型，支持自建知识库，提供智能问答、模拟法庭、智能写作、智能合同审核等功能\n②法宝GPT：基于海量法律数据的智能法律问答和类案匹配\n5.其他特色服务\n法宝透镜（企业诉讼风险图谱分析工具）、法宝视频（学术视频资源）、法考系统（法律职业资格考试在线练习）、刑事法宝（刑事领域深度加工数据）等", url: "https://www.pkulaw.com/", tags: "中文文献,法律数据" },
+    { category: "中文文献检索", name: "全国标准信息公共服务平台", brief: "国家市场监督管理总局、国家标准化管理委员会主管的公益类标准信息服务平台。", functions: "1.标准检索与分类导航：支持标准号、标准名称、国际标准分类号（ICS）、中国标准文献分类号（CCS）、关键词等多种检索方式\n2.标准全文免费下载：向社会提供在线阅读和免费下载国家标准，无需注册\n3.标准制修订过程公开：实时发布标准立项、征求意见、批准发布等各环节公告。用户可在标准页面右侧通过“意见建议”功能直接参与标准草案的反馈\n4.标准云课：针对重点热点国家标准，委托技术委员会或起草单位录制视频解读课程，免费观看", url: "https://std.samr.gov.cn/", tags: "中文文献,标准数据" },
+    { category: "中文文献检索", name: "中国科学文献服务系统(CSCD)", brief: "中国科学引文数据库，我国第一个引文数据库。", functions: "1.文献检索\n①提供来源文献检索（按作者、标题、期刊、年份等）和引文检索（查某篇论文被哪些论文引用）\n②检索结果可按被引频次、发表年份排序，显示期刊来源及文献类型\n③支持对检索结果进行引文分析，查看逐年被引趋势、主要引用期刊和高被引作者\n2.引文分析（核心特色）\n①提供单篇论文的总被引频次、他引频次、自引频次\n②可查询某机构、某作者的发文量和总被引情况，生成引证报告\n③广泛应用于国家杰出青年基金评选、国家重点实验室评估、中科院院士推选等，是多项国家级科研评价的指定查询库\n3.期刊评价（CSCD-JCR）\n①提供中国科技期刊影响因子、总被引频次、即年指标、引用半衰期、自引率等指标\n②每两年发布CSCD来源期刊列表，分为核心库和扩展库\n③可查询某期刊在学科内的排名分区，辅助投稿选刊\n4.统计分析服务\n①面向机构提供论文产出与引用的统计检索，生成学科发文量、地区分布等分析报告\n②可委托开展课题查新、项目评估、成果申报等定制化引文统计", url: "http://sciencechina.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中文社会科学引文索引(CSSCI)", brief: "南京大学研制的社科引文索引，人文社科领域权威评价工具。", functions: "1.文献检索\n①提供来源文献检索和被引文献检索两大功能。来源文献可检索普通论文、综述、评论、传记资料、报告等；被引文献可检索论文（含学位论文）、专著、报纸等被他人引用的情况\n②提供精确检索、模糊检索、逻辑检索、二次检索等优化方式，检索结果支持文本信息下载\n2.引文分析\n①从来源文献和被引文献两方面向研究人员提供学科前沿信息和学术发展动态，帮助挖掘新的研究生长点\n②提供地区、机构、学科、学者等多种类型的统计分析数据，为制定科学研究发展规划和科研政策提供决策参考\n③依托被引数据，可直观评估和追踪学者、机构研究成果的学术影响力\n3.期刊评价\n①提供多种期刊定量评价数据：被引频次、影响因子、即年指标、期刊影响广度、地域分布、半衰期等\n②由多种定量指标可得相应统计排序，从而评价期刊的学术影响和地位，为期刊评价、栏目设置、组稿选题等提供定量依据\n③每两年更新一次CSSCI来源期刊目录，分为来源期刊和扩展版来源期刊\n④CSSCI也可为出版社与各学科著作的学术评价提供定量依据", url: "http://cssci.nju.edu.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "全国报刊索引", brief: "上海图书馆主管的综合性中文报刊文献检索工具，涵盖近代特色文献资源。", functions: "1.近代特色文献资源\n①中国近代图书库\n②中国近代报纸库\n③中国近代期刊库\n④中国近代图片库\n⑤近代期刊精品库\n2.检索方式多元：提供普通检索（标题、作者、刊名等基础字段）、高级检索、地图检索和专业检索", url: "https://www.cnbksy.com/select", tags: "中文文献" },
+    { category: "中文文献检索", name: "汉斯期刊", brief: "国际综合性开源学术期刊出版机构，聚焦开源中文期刊。", functions: "1.文献检索与全文免费下载\n①读者可在官网按学科或刊名检索期刊，在单本期刊页面点击“免费下载”按钮获取全文\n②所有期刊文章均免费开放获取，无需注册，无并发用户数限制，支持从创刊起的所有文章回溯下载\n2.核心数据库收录\n①国内主流数据库：被知网（CNKI）、万方、维普等全文收录，文章可被有效检索与引用\n②国际索引收录：部分期刊被开源期刊目录DOAJ、美国《化学文摘》、EBSCO等数据库收录\n③部分期刊为RCCSE中文OA核心学术期刊，如《地理科学研究》《社会科学前沿》\n3.开放获取与版权协议\n①采用金色开放获取模式，文章一经出版即可永久免费在线访问，任何人不受经济或法律限制\n②默认遵循CC BY协议，作者拥有作品著作权，允许非商业性复制、传播和衍生作品制作\n③可灵活选择CC BY-NC协议，以满足作者对保护自身内容的需求", url: "https://www.hanspub.org/", tags: "中文文献" },
+    { category: "中文文献检索", name: "科学文库", brief: "科学出版社全学科在线阅读平台，以高端科技学术专著和教材为核心。", functions: "1.阅读便捷：采用原版高清PDF格式，可精确复现复杂专业的文字、图形、符号和公式，确保阅读的准确性。平台支持PC、手机、iPad等多终端访问，并采用WebPDF技术优化在线阅读体验，界面清晰、导航便捷。用户也可通过注册个人账号下载图书的CAJ格式文件，实现离线阅读\n2.检索强大：提供书名摘要检索、全文检索和高级检索等多种查询方式，并辅以二次筛选功能，帮助用户在海量资源中快速定位所需内容\n3.权限灵活：机构用户在线浏览通常无需登录，但如需整本下载，则需注册个人账号。下载的电子书一般有15天的有效期，到期后文件会失效，重新下载即可激活新的阅读权限", url: "https://book.sciencereading.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国国家图书馆", brief: "国家级数字图书馆，构建了“中华古籍资源库”、“民国图书”等多个特色资源库。", functions: "1.文献检索：\n①提供馆藏目录(OPAC)检索、特色数据库检索及文津搜索系统，后者整合了国图自建商购数据及地方图书馆资源，实现一站式的元数据发现与获取\n②检索结果支持多种途径的聚类和排序，辅助用户快速定位所需文献信息\n2.文献获取：\n①读者可通过读者云门户检索并在线浏览海量数字化资源全文，无需注册即可阅览古籍影像\n②文献提供中心为读者提供原文查询、文献传递服务，支持通过馆际互借系统获取本地无法满足的文献信息需求\n3.在线学习与视听服务：\n①国图公开课整合精品视频课程，涵盖百部经典、读书推荐、典籍鉴赏等栏目，提供免费的在线视频学习服务\n②线上“讲座服务”定期推出“文津讲坛”等公益性学术讲座资源\n③“视听服务空间”定期举办如黑胶文化节等主题活动，精选馆藏唱片提供开架阅览\n4.AI工具：\n①“文津漾楫”古籍阅读小程序，支持拍照识别诗词对联、将古籍原文转为白话文等功能，让古籍阅读更便捷\n②“中华古籍智慧化服务平台” (guji.nlc.cn) 深度融合AI技术，提供自动句读、文白对照翻译、AI智能问答、划词查询和版本比对等功能\n③数字馆员“小图” 可为访馆读者提供语音交互、问询导航等智能咨询服务", url: "https://www.nlc.cn/web/index.shtml", tags: "中文文献" },
+    { category: "中文文献检索", name: "大学数字图书馆国际合作计划(CADAL)", brief: "教育部“211工程”重点建设项目，构建多学科、多类型、多语种的海量数字图书馆。", functions: "1.特色资源收藏\n①古籍约24.4万册，收录大量善本，是研究古代历史、文学的重要基础\n②民国文献约33.1万件（图书17.6万册，期刊15.5万种），是研究近现代中国社会的权威来源\n③设13个特藏库：民国文献大全、墓志拓片、甲骨文数字化、蒋介石资料、满铁资料、侨批、哥伦比亚大学图书馆民国文献缩微胶片等，深入支持考古、文史研究\n④外文图书约71.6万册，涵盖美国大学图书馆核心馆藏等进入公共领域的经典学术资料\n2.数字借阅模式（版权保护机制）\n①实行借阅模式，不提供全文下载，每本书借期7天，支持在线浏览\n②普通用户可试读前10页，登录账号后点击“借阅图书”可阅读全文\n③在“个人主页—借阅记录”中可手动提前归还或续借，逾期系统自动收回权限\n3.校外访问（180天漫游，无需VPN）\n①成员馆用户通过绑定edu后缀的学校邮箱，即可在校外直接访问与校内同等权限的资源\n②注册后在“个人设置”中完成“IP绑定机构”，可获得180天有效期；在校内IP登录自动刷新有效期\n③超过180天未在校内登录则进入30天缓冲期，重新认证即可恢复\n4.个人知识管理\n①登录后可对文献添加标签、发表评论、分享资源、收藏，构建个人知识体系\n②“书单推荐”栏目支持读者分享和点赞书单，点击书单名可直接在线浏览平台收录的电子图书", url: "https://cadal.edu.cn/index/home", tags: "中文文献" },
+    { category: "中文文献检索", name: "国家哲学社会科学文献中心", brief: "中宣部部署，中国社会科学院牵头承建的公益性学术信息平台。", functions: "1.权威专题库：设有“习近平新时代中国特色社会主义思想”“古典学研究”“建设中国特色新型智库”等专题子库，按国家战略方向聚合权威文献，一键直达\n2.全球开放获取：所有资源免费阅读下载，支持中英文界面，海外用户无需注册即可访问\n3.期刊论文优先发布：与《经济研究》《中国工业经济》等100多家核心期刊签约，论文录用定稿后优先在平台发布，早于纸质期刊出版，时效性领先", url: "www.ncpssd.cn", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国光学期刊网", brief: "专注于光电领域的学术资源门户，独家整合国内80多种光学期刊。", functions: "1.独家核心期刊资源：独家且全面地全文收录了国内较权威的33种光电类中文核心期刊，另有13种期刊的文摘，完整涵盖了中国五大顶尖光学研究所的所有期刊资源\n2.行业资讯与E-First服务\n①平台不仅是文献库，也是行业信息门户，集中发布业内新闻、展会、培训及招聘等众多行业资讯\n②提供“E-First”（网络优先出版）服务，确保核心期刊的最新录用稿能比纸质期刊提前数月上线，让研究人员第一时间获得前沿研究成果\n3.访问与使用：该数据库为免费资源，不受IP限制，所有用户均可自由访问和检索，可在线浏览和全文下载", url: "https://www.opticsjournal.net/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国心理科学信息中心", brief: "中科院心理所图书馆为主体，心理学专业资源与预印本平台。", functions: "1.馆藏资源\n①馆藏中外文图书4万余册、中外文期刊1400余种约9万册，许多英文心理学期刊馆藏始自19世纪创刊号，是国内馆藏最全的心理学专业图书馆\n②收录珍贵历史资料：心理学创始人Wundt、Freud、Piaget等西方经典著作，以及中国早期心理学著作、我国早期心理学期刊如《心理》（1922年）等\n2.PsyChinaXiv预印本平台（核心特色）\n①国内心理学领域唯一的官方预印本平台，2018年上线，由中国心理科学信息中心运营\n②截至2024年，总发文量3168篇，总下载量约301万次，总访问量近千万，篇均下载近千次\n③快速发表预印本、开放存档已发表论文、探索开放同行评议、提供官方时间戳存档保护首发权\n3.科研情报分析与论文支撑服务\n① 提供前沿学科态势追踪、战略规划部署支持等科技情报分析\n② 定期发布ESI心理学热点快报，推送学科动态和国际前沿\n③ 提供论文查重检测、论文修改润色、查收查引等论文发表支撑服务", url: "https://lib.psych.ac.cn/library/home/index", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国生物医学文献服务系统", brief: "SinoMed，国内生物医学领域权威的中外文整合文献服务系统。", functions: "1.主题词检索（核心特色）\n①依据美国国立医学图书馆《医学主题词表（MeSH）》（中译本）对每篇文献进行深度标引，输入“高血压”自动关联“高血压”规范主题词及所有下位词\n②支持主题词与副主题词组配（如“高血压/药物治疗”），精准限定检索范围\n③提供主题词共现分析，自动生成高频关键词关系网，直接用于文献综述和系统评价\n2.智能选刊与个性化服务\n①录入论文标题和摘要，系统自动匹配推荐适合投稿的期刊（基于大数据计算）\n②支持检索历史保存、邮件定题推送、个人文献订阅\n③通过DOI和OA接口直接跳转全文，或通过NSTL文献传递获取", url: "https://www.sinomed.ac.cn/index.jsp", tags: "中文文献" },
+    { category: "中文文献检索", name: "中华医学期刊全文数据库", brief: "中华医学会系列期刊官方平台，独家资源。", functions: "1.独家中华医学会系列期刊资源：平台收录中华医学会主办期刊202种及其他合作期刊77种，全部为独家资源\n2.中华医学知识库（六大特色子库）：\n①精品指南库：收录中华医学会各专科分会制定的临床指南、共识和建议类文献2300余篇，依托全国顶尖学术组织和顶尖专家制定，是临床诊疗的重要参考依据\n②视频库：涵盖内科、外科、妇产科等20多个临床学科的学术会议视频，计825部，由各学科知名专家讲授\n③科研与写作库：下设科研培训、写作培训、编辑部面对面三版块，提供选题、项目申请、论文撰写和投稿指导等服务\n④名师讲堂库：从中华系列学术视频中遴选名家大咖的示范和讲解，按学科和专题精细化分类\n⑤全科教育库：围绕《基层医疗卫生机构常见疾病诊疗指南》，为全科医生及广大基层医务者提供多样性的知识服务产品\n⑥医学人文库：为长期从事医学工作人员自主思考医学人文性的平台，整合了中华系列杂志的人文医学类方面的资源，内容全面丰富，不局限于单刊", url: "https://www.yiigle.com/index", tags: "中文文献" },
+    { category: "中文文献检索", name: "中医智库", brief: "综合性中医知识服务平台，依托中国中医科学院资源。", functions: "1.四库联动检索：无需在古籍、医案、方剂、百科等不同模块间来回跳转，只需一次搜索，即可获得跨越所有库的聚合结果。检索结果支持在古籍、医案、方剂之间“一键切换”，高效打通中医经典与临床医案间的知识壁垒\n2.全面收录海量权威资源：收录1800余种经典中医古籍的点校版、4万例古今名医病案、30万首方剂，以及9000种证候、2万种症状与40万条中医药相关百科数据", url: "https://zhongyigen.com/#", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国农业科技文献与信息服务平台", brief: "国家农业图书馆，亚洲第一、世界第三大农业图书馆，农业大数据平台。", functions: "1.AI工具：平台基于华知大模型，整合海量农业数据打造了中国农业知识大模型。聚焦科技创新、科学决策、学术研究、服务三农四大场景，提供“农知搜问”（智能问答）、科研助手、农知伴读、农知推送等AI工具\n2.文献检索：平台通过农业学术服务平台统一整合农业科技文献、国内外农业项目、科学数据、行业报告、农业专利等资源，并提供数据下载服务", url: "https://nais.net.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "全国图书馆参考咨询联盟", brief: "公益性文献传递平台，联合全国公共、教育、科技系统图书馆。", functions: "1.免费文献传递：国内最大中文数字化资源库群，元数据总量 7.6 亿篇。个人在线注册后即可提交文献传递申请，系统在将文献全文发送至用户指定的邮箱", url: "http://www.ucdrs.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "MedSci", brief: "梅斯医学，临床医学领域期刊查询与学术支持平台。", functions: "1.期刊智能查询：可一键查询期刊影响因子、JCR/中科院分区、审稿周期等信息，支持期刊之间多维度对比\n2.临床研究与校企服务：面向药械企业客户提供数字化医学传播解决方案。官网额外开辟科研招聘板块，对接临床研究岗位和医学事务人才，结合产品优化医学推广等。拥有疾病风险数据库，可系统化数据挖掘支持临床科研\n3.AI工具：提供基于大数据的AI选刊功能，输入标题和摘要可智能推荐适合期刊并提供学科匹配度、投稿难度等推荐理由", url: "https://www.medsci.cn/sci/index.do", tags: "中文文献" },
+    { category: "中文文献检索", name: "百度学术", brief: "百度推出的免费中英文文献检索平台，集成AI助手。", functions: "1.文献检索\n①按相关性、被引量、发表时间排序，按发表时间、研究领域、核心数据库、关键词、文献类型、作者、发表期刊、机构8种方式筛选。支持关键词/主题检索、标题检索、DOI检索、参考文献串检索及高级检索\n②每条文献结果直观标注“免费下载”入口；未收录全文的文献提供“文献互助”通道，用户可发布请求，通过积分机制由其他用户协助获取全文\n2.学术服务\n①支持订阅感兴趣的关键词、收藏有价值的文献，通过个人中心统一管理\n②对研究方向做“开题分析”：系统从海量文献中提取相关研究点，以可视化图表展示历年研究热度与趋势\n③提供毕业论文查重服务，对接查重系统\n3.AI工具\n①AI学术搜索与AI助手：支持自然语言搜索，可对学术内容直接进行AI问答、总结提炼\n②论文图谱：以可视化图谱展示研究领域的经典文献、研究热点、发展脉络及分支方向\n③文献总结与AI阅读：支持批量上传最多100篇文献，AI在30秒内生成结构化总结，3分钟即可掌握文献核心内容；AI阅读可精准还原文献版式、自动翻译外文文献\n④AI编辑器与选题推荐：集成文献AI编辑器（一键插入表格、图表、复杂公式等），提供AI校对润色；基于用户需求自动挖掘推荐有价值的创新研究方向，激发科研灵感\n⑤集成SPSSPRO数据分析平台，无需切换即可一站式进行学术研究和数据分析", url: "https://xueshu.baidu.com/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国古典文献导航系统", brief: "奎章阁，古典文献资源导航平台，数字人文基础设施。", functions: "1.全球汉籍影像集成\n①支持一站检索全球公开的古籍影像资源，输入繁体书名或作者，系统自动汇聚各大馆藏机构提供的可用影像版本列表\n②数据来源涵盖中国大陆、港澳台及日、韩、欧、美等地的汉籍馆藏公开影像\n2.全球汉籍分布GIS系统\n①基于GPS定位技术，对全球汉籍馆藏单位的地理位置进行地图标注与空间数据展示\n②数据来源于OCLC（联机计算机图书馆中心）等权威联合目录\n③可直观查看各馆藏地的古籍分布情况，辅助实地调研规划\n3.古籍AI分析平台\n①支持大数据词汇统计、共现分析、全书句子检索、重文分析等功能\n②对古籍文本进行自动化结构化处理，为文献的量化研究和文本挖掘提供数据支持\n③协助研究者发现文本内部的潜在规律和关联", url: "https://www.wenxianxue.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国地方历史文献数据库", brief: "上海交通大学地方历史文献数据库，收录契约账册、诉讼文书等民间史料。", functions: "1.独家的民间一手史料（核心特色）\n①所有文献均来自田野调查、市场收购和授权复制，以契约账册、诉讼文书、赋役册籍为主，经济史、法制史材料占比较大，是研究明清至20世纪50年代中国土地制度、产权关系、乡村商业、乡村社会的地域性原始资料\n②文献以地域为单位完整、有序组织，如石仓、徽州等，尽可能将一个区域中的所有地方历史文献纳入同一数据库中，便于区域社会史的整体研究\n2.录文与原图对照阅读及数据导出\n①文献阅读采用录文与原图对照方式，图片可随意拖放，录文可切换原版式仿真、顺序直排两种模式\n②页面会显示检索热词，便于发现相关高频词汇\n③ 据经结构化处理后支持统计分析和元数据批量导出；提供从检索到引用的全流程辅助，可一键输出符合学术规范的引用信息，支持引用格式定制\n3.GIS辅助分析与数字人文工具\n①系统可识别和提取文献中蕴含的地理信息并标准化处理，实现GIS空间化展示，在地图上标注文献的原始出土地点分布\n②文献提供归户信息（同一家族或村庄的文书归集），便于追踪社会关系网络", url: "https://ndfwx.datahistory.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "高校学位论文服务系统", brief: "CALIS学位论文检索传递系统，提供中外文学位论文集成检索。", functions: "1.中外文学位论文集成检索\n①采用e读搜索引擎，通过简单检索、多字段高级检索组合方式查询题名、作者、专业、导师等字段，获取全国高校馆藏的中外文学位论文信息\n②系统根据登录用户所属机构身份，自动优化检索结果的显示与排序\n③收录范围涵盖理、工、农、医及人文社科等全学科领域，可满足不同学科方向的研究需求\n2.跨机构全文获取（核心特色）\n①\"一个账号、全国获取\"：注册后检索到学位论文，可直接通过系统提交文献传递申请。\n②合作机构众多：可申请获取的合作图书馆，包括国家图书馆、上海图书馆、国家科技图书文献中心（NSTL）、香港JULAC成员馆、KERIS等。\n③专家寻源通道：提供代查代检服务，由专业馆员在全国乃至全球范围内协助查找稀缺或非馆藏的学位论文原件", url: "https://etd2.calis.edu.cn/index", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国社会科学文库", brief: "中国社会科学出版社学术资源平台，电子书2.6万种。", functions: "1.十大专业子库与独家资源\n①设有中社智库、马克思主义研究、哲学宗教、历史考古、文学艺术、经济管理、民族边疆研究、国际关系、党政学习、教育学术十大子库\n②所有电子书实现纸电同步出版，出版社正版资源中社科出版社持有的部分为独家运营\n2.科研辅助与AI工具\n①社科问道：AI问答平台，接入大语言模型，基于社会科学文献大模型反馈解答问题\n②社科基金分析：国家社科基金项目分析平台，可供检索和分析历年立项情况\n③社媒大数据：分搜索和热榜巡查板块，获取社会科学领域舆情热搜和媒体动态\n④在线词典：支持页面划线查词和知识点查询", url: "https://www.sklib.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "中国近代经济思想文献数据库", brief: "高等教育出版社，专注于中国近代经济思想史的专题数据库。", functions: "1.资源特色\n①宏观把握中国经济发展脉络，全面反映中国近代经济与经济学的成长史\n②以结构化后的全文数据资源为主，图文并茂，为科研工作者提供知识服务型经济类特色文献全文数据库\n2.全文献全文检索\n①提供全文检索、限定条件检索、字间距检索等智能化数字功能，实现字字可检、句句可查\n②支持多维检索方式及纠错功能，方便读者和馆藏机构使用\n\n双版本呈现与导读\n① 每一种文献经专家甄选后，以原始版本和简体字版两种方式原汁原味呈现\n② 针对每一种文献，均由专家撰写简介评价，提供学理支撑", url: "https://economics.hep.com.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "科学智库", brief: "科学出版社智库类报告和研究专著数据库。", functions: "1.资源特色\n①收录中国科学院、中国工程院等国家级智库的出版成果，多为国家重大项目产出\n②包含中国科学院系列报告、国家自然科学基金应急项目、战略性新兴产业等十大专题库\n③资源以独立研究文章为基本单位，支持按作者、机构、基金等筛选\n2.专家与基金检索\n①可在“专家库”中按姓名检索特定专家的代表性成果\n②支持从基金资助角度筛选，了解历年资助与产出情况，辅助项目申报\n3.校外访问与引文\n①机构用户支持CARSI联邦认证，可校外远程访问\n②阅读时一键复制内容，自动生成规范化引文格式", url: "https://thinktank.sciencereading.cn/", tags: "中文文献" },
+    { category: "中文文献检索", name: "OpenSign公益性学术资源服务平台", brief: "清华大学图书馆“开放科学支持计划”，整合OA论文。", functions: "1.公益免费与无IP限制\n①面向全社会免费开放，无需订阅费用，无IP限制\n②个人注册后即可随时随地访问全部资源，无需依赖机构网络\n2.资源检索与一站式获取\n①整合超过1100万篇全球优质OA论文元数据，覆盖全学科领域\n②提供多维度筛选导航和智能推荐功能，按热点学科组织专题展示\n③通过链接标准引导用户跳转全文，实现从检索到获取的一站式服务\n3.学者主页与成果管理\n①注册后免费开通个人主页，可认领并管理个人发表的论文\n②可视化展示学者OA发文量年度统计、学术历程，便于成果展示与科研合作\n4.开放科学资讯推送\n①依托“OpenSign开放科学”微信公众号持续发布资讯，涵盖开放科学新闻动态、政策研究、出版支持等\n②助力用户及时把握开放获取和开放科学的最新发展动态", url: "https://opensign.lib.tsinghua.edu.cn/home", tags: "中文文献" },
+    { category: "中文文献检索", name: "读秀", brief: "超星学术图书搜索服务平台，片段级搜索和文献传递。", functions: "1.知识深度检索（核心特色）\n①支持全文检索，输入任意词句可精准定位到图书中的具体段落和出处，实现“化天下书为一本书”的片段级检索\n②检索结果以知识点条目形式呈现，聚合来自多本不同图书的相关内容\n③支持“以图搜图”，上传图片即可检索书中相关的插图、表格和图表\n2.文献传递\n①针对本馆未藏的图书资源，可申请文献传递服务：单次不超过50页，同一图书每周传递不超过全书20%\n②原文以电子邮件发送，有效期20天，支持传递的中文图书超349万种\n3.AI问答模式\n①在知识频道检索后，可切换至“问答模式”，大模型自动学习知识片段生成综述式回答\n②每句回答均标注来源并可跳转至原文，确保内容可追溯", url: "https://www.duxiu.com/", tags: "中文文献" },
+    { category: "中文文献检索", name: "掌桥科研", brief: "一站式科研服务平台，整合文献检索、AI写作、查重等。", functions: "1.AI科研助手\n①AI生成论文正文、范文、选题、文献综述、开题报告、答辩PPT等\n②提供AI查重与降重，支持AIGC检测，降低重复率和AI生成痕迹\n③AI翻译支持文档自动翻译和人工精译，另提供论文格式自动转换\n2.文档转换与学术社区\n①支持PDF转Word，会员每月免费转换页数\n②用户可发表笔记、评价，与他人交流，构建学术社交网络\n3.文献检索与获取\n①整合3.9亿条中外文献题录，支持一站式检索，无需多平台跳转\n②个人可购买会员，每月享50-100篇免费文献权益\n③提供2GB个人云空间，支持文献云端保存和管理", url: "https://www.zhangqiaokeyan.com/", tags: "中文文献" },
+    { category: "中文文献检索", name: "Open Access Library", brief: "OALib，公益性开放存取学术资源平台，收录570万+英文OA论文。", functions: "1.免费学术资源检索与下载\n①累计收录超570万篇免注册英文期刊论文，涵盖自然科学、工程技术、医学及人文社科领域，主要源自Hindawi、Plos One、MDPI等国际知名出版商\n②支持中英文关键词检索和通配符检索，文献以PDF格式为主，可直接在线阅读或免费下载全文\n③每篇文献均提供完整元数据（摘要、关键词、DOI、作者机构等），方便学术引用与溯源\n2.OALib自有期刊（OALib Journal）\n①OALib旗下自有的同行评审学术期刊，覆盖科学、技术、医学及社会科学所有领域\n②为稿件提供同行评审、排版和出版服务，每篇文章收取99美元版面费\n③所有发表在OALib Journal上的文章均存放在OALib平台，可免费访问\n3.预印本存储与检索\n①作者可提交稿件到OALib Preprints免费发表，存储在311个学科领域资料库内\n②支持作者提交其他期刊的预印本和后印本的元数据存储\n③预印本是同行评审前版本，后印本是同行评审后但未经排校版本", url: "https://www.oalib.com/", tags: "中文文献,英文文献" },
+    // ===================== 英文文献检索 =====================
+    { category: "英文文献检索", name: "Google Scholar谷歌学术", brief: "Google学术搜索是一个可以免费搜索学术文章的网络搜索引擎，索引了出版文章中文字的格式和科目，能够帮助用户查找包括期刊论文、学位论文、书籍、预印本、文摘和技术报告在内的学术文献，内容涵盖自然科学、人文科学、社会科学等多种学科。", functions: "1.文献检索\n①全球最大的免费学术搜索引擎，覆盖期刊、会议论文、学位论文、专利、预印本、图书等全学科资源\n②支持普通检索与高级检索（限定作者、出版物、年份），结果按相关性或时间排序\n③每条文献自动显示被引频次，点击“被引用次数”可追溯引文网络，快速定位后续研究\n④点击“所有版本”可罗列同一文献的预印本、机构库、作者主页等不同版本，便于免费获取全文\n⑤通过“设置—Library Links”绑定所在机构，检索结果直接显示机构订阅全文链接\n2.我的个人学术档案\n①创建个人档案后，系统自动聚合本人发表的全部论文，实时计算总被引频次、h指数、i10指数\n②档案页面可公开访问，方便展示学术成果和影响力，支持按年度查看引用趋势\n③可追踪特定作者的论文更新，点击作者名查看其全部发文及合著者网络\n3.我的图书馆\n①零门槛云端文献管理工具，点击检索结果下方的“保存”星标即可一键收藏\n②支持自定义标签分类，在图书馆内可对全文进行关键词搜索，快速定位\n③可批量导出文献题录（RIS/BibTeX格式），支持MLA、APA、Chicago等主流引文格式一键复制\n4.实验室\n①谷歌2025年底推出的生成式AI研究助手，将传统检索升级为AI驱动的深度探索\n②用自然语言提出复杂学术问题，系统自动拆解并同时运行十余种相关搜索，筛选最核心的论文\n③AI会为每篇推荐文献生成解释，阐述其与问题的相关性，帮助发现被传统搜索遗漏的关键信息", url: "https://scholar.google.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Web of Science", brief: "Web of Science是科睿唯安（Clarivate Analytics）开发的引文索引类数据库，整合科学引文索引（SCI）、社会科学引文索引（SSCI）、艺术与人文引文索引（A&HCI）、Emerging Sources Citation Index（ESCI数据库）、会议录引文索引、Book Citation Index等核心子库。平台提供独特的被引参考文献检索机制，支持跨学科文献追踪与分析功能，整合期刊引证报告（JCR）和基本科学指标（ESI）等评估工具。", functions: "1.引文索引\n①越查越旧：通过“Cited References”（参考文献）追溯一项研究的起源和理论基础\n②越查越新：通过“Times Cited”（施引文献）追踪一项研究的最新进展和应用动态\n2.分析工具\n①提供丰富的分析功能，可从作者、机构、出版年、学科类别、国家/地区、来源出版物等维度对检索结果进行深度分析\n②快速把握领域内的研究趋势、核心研究者、高产机构及热点期刊分布\n③可对多达10,000条检索结果一键生成引文报告，可视化呈现逐年发文量和被引趋势，自动计算总被引次数、篇均被引、H指数等核心指标\n3.期刊影响因子\n①科睿唯安每年发布Journal Citation Reports（JCR），公布期刊影响因子\n②JIF是衡量期刊学术影响力的重要指标，也是科研评价中常用的参考依据\n③可查询期刊的影响因子、分区及历年走势，辅助投稿选刊\n4.研究助手\n①引入AI工具Web of Science Research Assistant，支持自然语言提问\n②提供研究趋势可视化等功能，提升文献调研效率", url: "https://webofscience.clarivate.cn/wos/woscc/smart-search", tags: "英文文献" },
+    { category: "英文文献检索", name: "SCI-HUB", brief: "Sci-Hub是由哈萨克斯坦程序员Alexandra Elbakyan于2011年创建的开放获取学术数据库，通过绕过版权保护机制提供免费文献下载服务。", functions: "1.文献检索\n①全球最大的免费学术论文获取平台，拥有超过8800万篇学术论文数据库，旨在打破高价期刊订阅壁垒，让知识免费惠及全球研究者\n②支持文献链接检索、DOI号检索、PMID号检索三种方式，暂不支持直接通过关键词检索文献\n③献链接检索：在期刊官网获取论文页面完整URL，粘贴至Sci-Hub输入框即可自动跳转PDF\n2.AI工具（Sci-Bot）\n①2026年最新推出的AI聊天机器人，基于Sci-Hub数据库实现自然语言的学术问答\n②回答结果直接引用Sci-Hub数据库中的论文原文且附带链接，生成内容可追溯，用户可一键跳转免费下载\n3.辅助工具\n① SciHub Desktop桌面客户端：轻量化Windows/Mac软件，输入DOI/PMID即可一键下载PDF，无需打开浏览器\n② Zotero-SciHub插件：集成于Zotero文献管理软件，添加文献后自动从Sci-Hub获取并挂载PDF附件，实现文献条目管理与全文获取一体化\n③ Sci-Hub X Now浏览器扩展：基于Manifest V3标准的智能扩展，在PubMed、Web of Science等平台遇到付费文献时，自动检测DOI并生成Sci-Hub直达链接", url: "https://sci-hub.st/", tags: "英文文献" },
+    { category: "英文文献检索", name: "PubMed", brief: "PubMed是一个免费的MEDLINE数据库，提供生物医学和健康科学领域的文献搜索服务。PubMed的数据主要来源有：MEDLINE、OLDMEDLINE、Record in process、Record supplied bypublisher等。数据类型：期刊、综述、以及与其它数据库链接。", functions: "1.资源规模\n①收录超过4000万条生物医学文献摘要，涵盖MEDLINE、PubMed Central及出版商在线优先出版文献\n2.文献检索\n①输入关键词、作者、DOI或期刊名进行检索\n②使用MeSH医学主题词检索，系统自动匹配规范词和下位词，快速找全同一主题文献\n③使用高级检索按标题、作者、期刊、出版日期等字段组合检索，精确定位文献\n④检索结果中点击“Free PMC article”或“Free full text”直接获取开放获取全文，通过“LinkOut”跳转至期刊官网或机构订阅资源获取全文\n3.个人文献管理\n①免费注册My NCBI账号，保存检索式和检索历史，随时重复使用\n②创建多个文献收藏夹，分类保存感兴趣的文章\n③按文献类型（综述、随机对照试验）、语种、年龄等条件过滤检索结果", url: "https://pubmed.ncbi.nlm.nih.gov/", tags: "英文文献" },
+    { category: "英文文献检索", name: "PubMed Central", brief: "PubMedCentral（PMC）是由美国国立卫生研究院（NIH）旗下的国立医学图书馆（NLM）与美国国立卫生研究院（NIH）联合建立，并由NLM下属的国家生物技术信息中心（NCBI）于2000年2月负责开发与维护的生物医学与生命科学期刊全文数据库，免费向公众开放。该数据库通过电子副本形式存储期刊文献及作者提交手稿，与PubMed文摘数据库形成互补，支持全文检索与下载。", functions: "1.资源特色\n①免费收录生物医学和生命科学领域全文文献，总量超过1200万篇，全部可在线阅读和下载\n②收录数千种期刊，内容最早可追溯至18世纪末，涵盖正式发表论文、作者手稿及预印本\n2.开放获取子集\n①提供数十万篇CC协议（如CC BY、CC0）发布的全文，允许自由重用、文本挖掘和二次分析\n②可通过FTP服务器批量下载XML和PDF格式的原始文件，支持大规模数据挖掘\n3.文献检索\n①输入关键词、作者、DOI或期刊名，直接检索可获取全文的文献\n②使用高级检索按标题、作者、期刊、出版日期等字段组合检索", url: "https://pmc.ncbi.nlm.nih.gov/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Science Direct", brief: "ScienceDirect OnSite是Elsevier旗下的核心学术数据库。该数据库涉及众多学科：计算机科学、工程技术、能源科学、环境科学、材料科学、数学、物理、化学、天文学、医学、生命科学、商业、及经济管理、社会科学等。", functions: "1.资源特色\n①收录爱思唯尔出版的大量高影响力期刊和图书，其中约82%的期刊被SCI收录\n②拥有《柳叶刀》《细胞》等众多顶级期刊，约19%的全球全文文献量和28%的学术引用量源自该平台\n2.文献检索\n①提供简单检索和高级检索，可按标题、摘要、作者、期刊名、关键词、ISSN等多种字段精确查找\n②支持使用布尔逻辑算符（AND、OR、NOT）和截词符（*）组合检索策略\n3.科研辅助工具\n①集成参考文献导出功能，支持多种引文格式\n②提供引用跟踪功能（如关联Scopus），方便追踪文献被引用情况，辅助文献管理和科研工作", url: "https://www.sciencedirect.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Engineering Village", brief: "Engineering Village是Elsevier旗下的工程与应用科学领域文献检索平台，主要服务于工程师及科研人员。Engineering Village平台上的10多个数据库，涵盖了工程、应用科学相关领域，平台托管了包括Compendex、Inspec、GeoBase等多个工程数据库，内容涵盖期刊、会议记录、专利、技术报告等多种文献类型。", functions: "1.资源特色\n①全球工程领域最权威的文摘数据库，核心库Compendex收录190个工程学科，数据量超过3500万条，最早回溯至1884年\n②涵盖期刊、会议论文、学位论文、专利、标准等多种文献类型\n2.文献检索\n①提供快速检索、专家检索和叙词检索三种方式\n②叙词检索使用受控词汇，自动推荐相关概念词，显著提升查准率\n③支持数值数据搜索，可按物理特性（如温度、硬度）精准查找文献\n3.AI工具与科研辅助\n①AI研究助手支持自然语言提问，生成带参考文献来源的研究摘要\n②个人账户可保存检索式、设置邮件提醒，追踪前沿动态", url: "https://www.engineeringvillage.com/home.url", tags: "英文文献" },
+    { category: "英文文献检索", name: "Scopus", brief: "Scopus是由全球21家研究机构联合300余名科研人员共同开发的信息导航工具，覆盖科学、技术、医学、社会科学等领域的超过2.8万种期刊，包含超过1亿条文献记录及海量参考文献，功能体系包含文献检索、引文追踪、专利分析及学术评价模块，配备作者标识系统与H指数评估工具。", functions: "1.资源特色\n①全球最大的同行评议文献摘要与引文数据库，收录超1亿条记录，涵盖自然科学、医学、社会科学、生命科学全领域\n②收录2.8万种活跃期刊（含8000多种OA期刊）、25万种电子书、1300万篇会议论文及4600万个专利链接\n2.文献检索\n①支持基本检索、高级检索和作者检索，可按标题、作者、关键词、机构、ISSN等字段精确查找\n②检索结果页提供多维度筛选精炼（年份、学科、作者、机构、国家、文献类型等）\n③检索结果可一键导出RIS、BibTeX等引文格式，支持批量导出至文献管理工具\n3.AI工具\n①自然语言提问（支持中文），系统自动生成带参考文献来源的研究摘要，答案可溯源\n②Deep Research自动制定研究计划、多轮迭代检索，生成带置信度评分的综合研究报告\n③概念图谱与新兴主题识别：可视化呈现领域结构，自动识别近2年快速上升的研究空白区", url: "https://www.scopus.com/pages/home", tags: "英文文献" },
+    { category: "英文文献检索", name: "Wiley", brief: "Wiley Online Library是全球历史最悠久﹑最知名的学术出版商之一，享有世界第一大独立的学协会出版商和第三大学术期刊出版商的地位。", functions: "1.资源特色\n①全球第三大学术期刊出版商，平台涵盖科学、技术、医学、社会科学及人文科学全学科领域\n②收录超2000种同行评审学术期刊、超2万种电子图书、数百种参考工具书、实验室操作手册及循证医学数据库\n2.文献检索\n①支持快速检索（按关键词、作者、标题、DOI）和高级检索（多字段组合检索）\n②支持布尔逻辑运算符（AND、OR、NOT）、括号优先运算、引号精确词组检索及通配符检索\n③检索结果可按出版时间、文献类型、学科分类筛选，并按相关度或出版日期排序；文献标识“Full access”为已订阅全文、“Free access”为免费资源、“Open access”为开放获取\n3.AI工具：Wiley AI Gateway：业内首个原生AI研究情报平台，集成Claude、Le Chat、Perplexity等主流AI，将同行评审内容无缝对接至AI工作流，生成内容可溯源", url: "https://onlinelibrary.wiley.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Oxford University Press", brief: "牛津大学出版社（Oxford University Press, OUP）作为全球规模最大的大学出版社，也是牛津大学的重要组成部分，致力于在全球范围内推动知识和学习的发展。其出版物范围广泛，涵盖学术、教育、英语教学等多个领域 。", functions: "1.资源特色\n①Oxford Academic平台整合超44,000本学术专著和500余种学术期刊，约73%的期刊被SCI、SSCI或AHCI收录\n②提供Oxford Scholarship Online（30,000+学术专著）、Oxford Handbooks Online（权威学术手册）、Oxford Reference（200万+词条）、Oxford Bibliographies（40+学科研究指南）、Oxford Medicine Online、Oxford Clinical Psychology等专业数据库\n③约20%的期刊为OA模式，每年出版约40本OA学术专著\n2.检索与工具\n①支持高级检索、学科深度标引及AI Discovery Assistant智能选读\n②参考文献一键导出至EndNote、RefWorks等工具", url: "https://global.oup.com/academic/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Nature", brief: "Nature是全球最具权威性和影响力的综合性科学周刊，被公认为科学出版界的“圣杯”，与《Cell》和《Science》齐名，被誉为“世界三大顶级期刊”（CNS）。它致力于发表所有科学领域中最重要、最前沿的原创性研究，并报道全球科学界的重要新闻、评论和观点。", functions: "1.资源特色\n①创刊于1869年，是全球最知名的多学科科学周刊，通过nature.com平台提供《自然》周刊及60余种“自然”系列期刊，覆盖生命科学、物理科学、临床医学、社会科学等领域\n②平台每月有超过1000万独立访客访问Nature Portfolio内容，包括原创研究论文、新闻与评论等\n2.核心影响力\n①2024年全球引用量超96万次，2025年影响因子约64.8，连续多年位列多学科领域第一\n②Nature不仅仅是一本研究期刊，它通过其News、Comment等栏目，深度参与和记录科学界的重大事件、政策辩论和伦理讨论，是科学家和公众理解科学如何与社会互动的重要窗口\n③在Nature上发表一篇论文被全球科学界视为职业生涯的巅峰成就之一。\n3. AI工具\n①Nature Research Assistant：面向所有学科领域的AI研究助手，旨在帮助用户更快地发现、阅读和理解研究论文，并提供学术写作建议；由大语言模型和多种内部开发的机器学习技术生成\n②Methods Muse：专为生命科学领域设计的AI助手（“实验室AI‘缪斯’”），使用OpenAI的GPT-4o mini与RAG技术，结合Springer Nature专有知识模型和知识图谱，简化实验方案设计、优化和故障排除", url: "https://www.nature.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Science", brief: "Science是美国科学促进会出版的国际顶级综合性学术期刊，创刊于1880年，与《Nature》和《Cell》齐名，被誉为“世界三大顶级期刊”（CNS）涵盖自然科学所有学科并以发表原创科研成果和科学评论闻名，它致力于发表最重要、最前沿的原创性科学研究，并报道全球科学政策、新闻和观点。", functions: "1.资源特色\n①创刊于1880年，由美国科学促进会（AAAS）出版，是全球历史最悠久、最权威的综合性科学周刊之一。每周出版一期（含纸质版与在线版），出版量约1万册。年均投稿量约1.5万篇，投稿竞争异常激烈，2025年为15088篇\n②期刊覆盖全部科学领域，年发文量约800篇，下设Research Articles（较长研究）、Reports（短篇快报）等栏目。2025年影响因子56.9，属JCR Q1，中科院一区Top期刊\n2.核心影响力：所有来稿经过严格同行评审，稿件接收率不到8%，影响因子连续多年在生物学与生物化学、分子生物学与遗传学、材料科学、化学、物理学等多个学科高居榜首\n3.AI工具\n①使用iThenticate检测文本抄袭，Proofig检测图像篡改\n②与DataSeer合作部署AI驱动的SnapShot平台，自动生成MDAR（材料、设计、分析和报告）清单，以检测和评估研究数据与代码的共享遵从情况", url: "https://www.science.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Cell", brief: "Cell 是生命科学领域最具影响力和权威性的顶级学术期刊之一，与《Nature》和《Science》齐名，被誉为“世界三大顶级期刊”（CNS）。它以其极高的学术标准、严格的审稿流程和发表具有广泛生物学意义的重大原创性研究而闻名。", functions: "1.资源特色\n①创刊于1974年，由Cell Press细胞出版社出版，是国际顶尖的生命科学周刊之一，期刊涵盖细胞生物学、分子生物学、神经科学、免疫学、病毒学、癌症、人类遗传学等多个实验生物学领域\n③期刊出版模式多样，提供25种订阅型全文期刊以及20余种开放获取期刊，学科范围包括临床医学、基础医学、生物化学、遗传学、化学、物理、环境科学与工程、材料科学与工程等\n2.核心影响力\n①2025年JCR影响因子为42.5，在“生化与分子生物学”及“细胞生物学”两个小类中均为Q1区，连续多年位列生命科学领域前列\n②采用严格的同行评审，官方初审时长约8天，审稿周期平均2个月，通过率仅约5%，竞争极其激烈", url: "https://www.cell.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Springer", brief: "施普林格（Springer）期刊包括 2900 余种期刊，涵盖了科学、技术、医学、人文和社会科学等广泛的学科领域，一直是各领域专家阅读、参考并为之撰写论文的重要研究来源。施普林格的学术期刊致力于推动知识在全球研究人员和专业人士间的传播，可通过SpringerLink平台获取。", functions: "1.学术期刊\nSpringer出版大量高影响力的学术期刊，覆盖所有STM领域。许多期刊拥有高的影响因子，是研究人员发表研究成果和追踪前沿的首选平台之一\n2.学术图书\n这是Springer的传统强项和标志性产品。其出版的图书包括：\n①教科书（Textbooks）：经典的教学用书\n②专著（Monographs）：深入探讨特定主题的学术著作\n③会议论文集（Proceedings）：收录学术会议发表的最新研究\n④参考书（Reference Works）：如百科全书、手册等\n3.数字平台与数据库：\n①SpringerLink：这是Springer的核心在线门户，用户可以通过该平台检索、浏览和下载其绝大多数的期刊文章、电子书和参考工具书\n②专业数据库：Springer还提供一系列高度专业化的数据库，如SpringerProtocols：分子生物学实验室方法的权威数据库；SpringerMaterials：关于材料性质和数据的综合数据库", url: "https://link.springer.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "APS", brief: "APS（American Physical Society，美国物理学会）是全球最具声望的物理学专业学会之一，也是物理学领域最权威的学术出版机构和领导者。", functions: "1.文献检索与获取\n①检索物理评论系列期刊（PRL、PRX、PRA–PRE等）及PROLA过刊库（1893年至今）的论文\n②按编辑推荐、亮点论文、里程碑论文等分类筛选高价值文献\n2.学术会议服务\n①使用会议APP查看议程、管理日程、联系参会者\n②线上虚拟会议支持聊天、评论和论文分享\n3.职业发展支持\n①查阅年度职业指南，获取学术、国家实验室、企业等就业信息\n②参加产业导师计划（IMPact），链接业界专家\n③浏览物理领域招聘公告板（APS Physics Jobs）", url: "https://www.aps.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "IOP", brief: "IOP（全称 IOP Publishing，曾用名Institute of Physics Publishing）是物理科学与相关领域全球领先的专业学术出版机构。它隶属于英国物理学会（IOP），但其出版物覆盖的范围远不止物理学，已扩展到材料科学、天文学、生物物理学、工程学等多个领域。", functions: "1.核心特色与影响力\n①物理与交叉学科的权威平台：Journal of Physics系列覆盖物理各子领域，同时在材料科学、工程物理、生物物理等交叉学科享有权威地位。\n②严格同行评审：坚持高标准的科学严谨性和可靠性，在其期刊上发表论文被公认为重要成就。\n2.文献检索\n①IOPscience平台检索100余种期刊和850余种电子图书，支持“相关文章”智能推荐，帮助拓展文献视野。\n②免费浏览器扩展GetFTR：在任意网页点击DOI即可一键跳转IOPscience正式版本，并显示撤稿与勘误提醒。\n3.开放获取与作者服务\n①旗舰OA期刊《New Journal of Physics》享有高声誉，对中低收入国家提供APC豁免或折扣。\n②CRediT贡献角色分类：作者可从14个标准化角色中勾选个人贡献，确保分工被准确记录。\n③免费开放数据课程与数据政策：指导研究者规范共享数据，提升研究透明度和可复现性。", url: "https://iopscience.iop.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "ASCE", brief: "美国土木工程师学会（American Society of Civil Engineers，简称 ASCE）是全球土木工程领域最具影响力的专业机构之一。它远不止是一个简单的学术组织，而是一个集行业倡导、继续教育、技术标准制定、学术出版和全球社区建设于一体的综合性学会。", functions: "1.馆藏特色\n①所有资源整合于ASCE Library平台，馆藏量超过20万篇文献、250万页内容，且以每年6,000篇的速度增加\n②出版物涵盖工程力学、结构工程、岩土工程、环境、交通、水利、城市规划、项目管理、建筑材料等超过18个核心学科", url: "https://www.asce.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "MathSciNet", brief: "MathSciNet 是由美国数学学会（American Mathematical Society, AMS） 运营的权威、专业的数学评论数据库。它是全球数学领域最重要的文献检索和评论资源，被誉为数学界的“黄金标准”。", functions: "1.资源特色\n①美国数学学会（AMS）出版的数学领域权威书目及引文数据库，收录全球数学、统计学及相关交叉学科的核心文献\n②涵盖期刊论文、图书、会议录等，最早回溯至1864年，数据量持续更新\n2.文献检索\n①数学主题分类（MSC）系统：采用AMS创建的层次化数字编码对每篇文献进行标引，支持极为精准的主题检索，避免关键词歧义\n②高质量数据与作者识别：自动归集同一作者全部作品（无论姓名拼写变化），支持作者检索及引文分析\n③检索结果可查看参考文献与被引用信息，追踪学术影响力\n3.MR Review（专家评论）\n①MathSciNet的灵魂功能：每篇收录的重要文献均由AMS邀请领域专家撰写评论\n②评论不仅总结摘要，还评价论文的贡献、方法、局限及学科定位，说明与已有研究的关系", url: "https://mathscinet.ams.org/mathscinet/publications-search", tags: "英文文献" },
+    { category: "英文文献检索", name: "PNAS", brief: "PNAS（Proceedings of the National Academy of Sciences of the United States of America，《美国国家科学院院刊》）是全球最负盛名的多学科综合性科学周刊之一，以其高影响力、广泛的学科覆盖和独特的出版流程而闻名。", functions: "1.双轨投稿制度\n①直接投稿：面向全球学者，匿名同行评审，接受率约13%\n②院士供稿：NAS院士每年可贡献2篇，自行组织评审，发表率超98%，首页标注“Contributed by”\n2.科学传播\n①PNAS Science Sessions播客：免费收听，顶尖学者探讨论文背后故事\n②免费科普视频及新闻特写，连接科研与公共政策\n3.文献检索\n①Early Edition每日更新：定稿后先于印刷版在线发表\n②提供特征因子、Altmetric等实时文章级别度量\n③支持高级检索（字段限定、布尔逻辑），导出多种引文格式", url: "https://www.pnas.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "IEEE Xplore", brief: "IEEE Xplore（全称 IEEE Xplore Digital Library）是全球电气电子工程、计算机科学、电子技术及相关领域最权威、最核心的在线数字资源库之一。它由全球最大的专业技术组织之一——IEEE（电气与电子工程师学会） 提供。", functions: "1.资源特色\n①由国际电气与电子工程师学会（IEEE）运营，是电气电子、计算机、人工智能等领域最权威的学术资源平台\n②提供期刊、会议论文、技术标准及电子图书的全文访问，期刊文献可回溯至1884年\n③最重要的特色是收录了全球几乎所有顶尖国际会议（如CVPR、INFOCOM）的论文，是追踪最新技术突破和前沿动态的核心渠道\n2.文献检索\n①支持基本检索和高级检索，可按作者、出版物标题、资助机构等多字段精确查询\n②支持邻近运算符（NEAR）、通配符（*、?）等高级检索技巧\n3.AI工具\n①Research Navigator：支持自然语言提问和长文本检索，能智能捕捉查询意图并推送相关论文及摘要\n②AI Overview：基于大型语言模型生成对用户问题的AI回答和AI文章摘要，帮助快速了解主题\n③Reading Lens：自动识别并高亮50余类关键技术术语，并提供基于IEEE文献大模型生成的术语定义，助你快速克服阅读障碍\n④IEEE Image Search：允许从文献的图片、图表中进行搜索，使用户能直观地查找相关技术方案或数据图示", url: "https://ieeexplore.ieee.org/Xplore/home.jsp", tags: "英文文献" },
+    { category: "英文文献检索", name: "PubChem", brief: "PubChem 是由美国国家生物技术信息中心（NCBI）维护的免费化学数据库，它是全球最大、最全面的公开化学信息库之一，主要服务于生命科学和化学领域的研究人员、学生和教育工作者。", functions: "1.重要数据库：\n①Compound 数据库（化合物）\n这是经过计算机处理的标准化数据库。它将来自不同来源的同一分子进行归一化处理，生成一个唯一的、权威的条目（CID, Compound ID）\n②Substance 数据库（物质）\n这是一个信息库，存储了来自数百个数据提供者（如药企、学术机构、政府机构）的具体样品信息。同一个化合物分子，可能因为来自不同的供应商、以不同的盐形式存在、或具有不同的纯度，而在Substance数据库中拥有多个条目（SID, Substance ID）\n③BioAssay 数据库（生物活性）\n这是PubChem最具特色的数据库之一，专门存储生物活性筛选实验的结果。它包含了成千上万个高通量筛选实验（HTS）的数据，记录了哪些化合物（CID）在哪些实验（AID, Assay ID）中表现出了活性，以及活性的具体数值（如IC50, EC50, Ki值）", url: "https://pubchem.ncbi.nlm.nih.gov/", tags: "英文文献" },
+    { category: "英文文献检索", name: "APA", brief: "美国心理学会（American Psychological Association，APA）成立于1892年7月，总部位于美国马萨诸塞州克拉克大学，创始人为斯坦利·霍尔，是国际规模最大的心理学学术组织。它主要有两大职能：1. 专业的学术组织 和 2. 权威的出版机构。其中，其制定的 APA格式（出版手册） 在全球社会科学领域具有巨大影响力。", functions: "1.学术与职业服务\n①举办年会：汇集全球心理学家分享最新研究成果\n②制定伦理标准：颁布《心理学家的伦理原则和行为规范》，提供道德指南，APA格式（出版手册） 在全球社会科学领域具有巨大影响力\n③倡导公共政策：基于心理学证据向政府提供心理健康、教育、医疗等政策建议\n④资格认证：认证临床心理学、心理咨询等博士培养项目和实习机构\n2.出版与文献资源\n①学术期刊：出版约90种同行评审期刊，覆盖心理学全学科\n②学术书籍：出版大量学术专著、教科书和参考书\n③APA PsycINFO数据库：文摘索引数据库，收录全球心理学及相关学科文献摘要，是心理学文献检索的必备工具", url: "https://www.apa.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "ACS", brief: "ACS（American Chemical Society，美国化学会）是全球最大的科学学会之一，也是化学领域最权威、最具影响力的出版机构和专业组织。它远不止是一个出版社，而是一个集学术出版、学术会议、化学教育、职业发展、公共政策倡导于一体的综合性共同体。", functions: "1.文献检索\n①可访问68种同行评审期刊、1600多本图书及130万篇文献\n②按学科分类浏览，导出RIS/BibTeX等多种引文格式\n2.开放获取出版\n①所有期刊均提供OA选项，含19种完全OA期刊和80余种混合期刊\n②通过机构协议或资助机构减免文章处理费（APC）\n3.学术会议\n①参加每年两次的全球年会，参与数千场专题报告和海报展示\n②使用会议APP管理日程，部分会议支持线上直播或远程参与\n4.会员与职业发展\n①会员可免费下载期刊文章、订阅C&EN新闻杂志、访问LinkedIn Learning\n②获取职业咨询、简历润色服务及求职平台C&EN Jobs\n5.化学文摘SciFinderⁿ\n①CAS开发的权威科研工具，集成文献、物质和反应三大检索模块\n②支持化学结构式精确检索及逆合成分析，辅助实验设计", url: "https://www.acs.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "EBSCO", brief: "EBSCO是研究数据库、电子期刊和电子包订阅管理、图书收藏开发和采购管理的领先提供商，也是图书馆技术、电子书和临床决策解决方案的主要提供商，为大学、学院、医院、公司、 政府、K12 学校和全球公共图书馆。", functions: "1.资源特色\n①EBSCOhost研究平台：直观的在线检索平台，可访问300多个数据库、数十万种电子期刊和数百万篇学术文献\n②ASC综合学科全文库：收录20,000余种期刊索摘，提供8,800余种全文期刊（其中7,700多种为同行评审），最早回溯至1887年\n③BSC商管财经全文库：收录8,000余种期刊索摘，3,700余种期刊全文，以及8万余种非期刊全文（如案例分析、国家及产业报告）\n④ EBSCO电子书：平台可同步检索电子书和有声书，显示在数据库检索结果中，方便发现馆藏更多内容\n2.EBSCO发现服务（EDS）\n①一站式发现全球海量学术资源，覆盖全球9万多家期刊和图书出版社的海量中外文资源，资源类型包含学术期刊、论文、传记、音视频、评论、新闻等\n②提供高质量元数据与相关性排序，整合馆藏订购资源、开放获取资源及特色自建库，通过独特算法，将海量文献汇编成序，优先显示高质量结果\n③支持高级检索、全文检索、二次检索；融合3,500多种OA开放获取平台，含27,000多种OA期刊，可通过EDS直接获取全文\n3.个人文献管理\n①My EBSCOhost个人账户：免费注册，支持保存文献、检索式与检索历史，依个人习惯进行分类整理\n②文献提醒：可为特定检索式或特定期刊设置邮件或RSS提醒，系统自动推送新增匹配文献\n③引文导出：可直接从数据库导出RIS、BibTeX等格式引文，无缝对接EndNote、Zotero等管理工具\n4.商用技术分析\n①Business Source系列：商管财经类学术前沿文献追踪平台，提供公司/行业/市场研究报告、国家经济分析资料\n②收录多家重要学协会期刊（如INFORMS运筹学与管理科学学会、美国管理学会、美国会计学会等）所有官方期刊，且无延迟收录，含众多FT50与UTD24顶级期刊", url: "https://www.ebsco.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Annual Reviews", brief: "Annual Reviews（年度综述）是一个非营利性出版机构，在全球学术界享有极高声誉。它专注于出版一系列高度权威、极具影响力的综述期刊。 核心价值与特色 Annual Reviews 的核心价值在于其无与伦比的权威性和为学术界节省时间的巨大能力。", functions: "1.资源特色\n①由领域顶尖科学家撰写综述，每篇平均30页并含约130篇参考文献，内容经过编委会与累计式同行评审双重审阅\n②覆盖生物学、医学、物理学、社会科学等40多个学科，是获取学科前沿综述的核心资源\n2.文献检索\n①提供高级检索，可按标题、作者、摘要、全文、图表说明等字段限定，支持布尔逻辑运算\n②检索结果可导出RIS、BibTeX等引文格式\n③每篇论文的参考文献均可直接链接查看，支持按作者、文献跨库追踪\n3.个人文献管理\n①注册个人账号后可保存检索式和收藏文献，设置邮件提醒跟踪新文章或新被引\n②平台支持移动端自适应访问，机构用户可通过校外认证远程访问", url: "https://www.annualreviews.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "JSTOR", brief: "JSTOR（Journal Storage）是一个成立于1995年8月的非营利性学术期刊数字化机构，由美国安德鲁·梅隆基金会发起。其主要目的是通过对核心学术过期期刊进行数字化存档，以解决图书馆的存储空间与维护成本问题。该数据库收录了超过2700种学术期刊，涵盖政治学、经济学、历史、哲学等人文社科及自然科学领域，文献最早可回溯至1665年。", functions: "1.资源特色：收录超过2,800种期刊、15万册电子书及数百万份一手史料（手稿、信件、政府文件等），覆盖人文社科、自然科学等75个学科领域\n2.文献检索\n①支持基本检索和高级检索，可按全文、作者、文摘、标题等字段限定，支持布尔逻辑（AND/OR/NOT）、引号精确匹配、通配符（*/?）等检索技巧\n②高级检索可限定文献类型（期刊文章、图书章节、研究报告等）、出版年代、学科范围等条件；支持按学科主题、刊名、出版社、图像等多种浏览方式\n③检索结果页左上角可选择“Keyword”关键词检索或“Semantic”语义检索模式，系统基于AI理解查询意图推荐概念相关的内容\n3.Workspace个人工作区\n①注册免费个人账号后使用Workspace，可将文章、图书章节、图片保存至自定义文件夹，添加标注和说明；支持上传个人文件与JSTOR资源整合于同一工作区\n②支持将文件夹分享给同机构的合作者；可将选中内容导出为PDF参考列表、PPT演示文稿或ZIP压缩包\n4.AI工具\n①在文章、图书章节或研究报告页面，AI研究工具在右侧边栏提供“What is this about？”等预设提示，可基于当前文献内容生成摘要和要点；选中文字后AI可帮助查找文中相关内容和JSTOR平台上的其他相关文献\n②支持自然语言提问，AI仅基于当前文献的全文和元数据回答，回答附带内嵌引用链接；使用前需用个人账号登录\n③语义检索：在检索结果页将模式切换为“Semantic Results”，AI基于大语言模型理解查询意图，推荐概念相关的内容", url: "https://www.jstor.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "ProQuest", brief: "ProQuest是一个全球性的、内容极其丰富的综合信息与学术资源平台，主要为全球的图书馆、学校、企业和政府机构提供信息资源解决方案。它不是一个单一的数据库，而是一个庞大的数字资源聚合平台和发行商。", functions: "1.资源特色\n①学术期刊：提供数以万计的学术期刊，覆盖科学、技术、医学、人文社科等所有主要学科，许多内容提供全文访问\n②博硕论文：PQDT全球学位论文库收录全球5000多所大学的数百万篇博硕士论文摘要和索引，其中超300万篇可提供全文PDF，是追踪前沿、避免重复研究、学习研究方法论的核心工具\n③新闻与报纸：历史报纸数据库提供世界知名报纸的数字化档案，可检索和查阅上百年前的新闻原文\n④电子书：提供来自数千家出版社的海量电子书，涵盖学术专著、专业书籍和大众读物\n⑤原始历史档案与特藏：拥有大量独一无二的数字化历史档案集，如美国政府文件、英国殖民地档案、早期印刷书籍、美国民权运动原始资料等，为深入研究提供第一手材料", url: "https://www.proquest.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "arXiv", brief: "arXiv是一个完全免费的、开放获取的学术预印本服务器。它是最重要、最知名的未经过同行评审的论文预印本发布平台，在全球学术界，特别是在物理学、数学和计算机科学等领域，具有巨大的影响力。", functions: "1.学术交流加速器\n①在传统期刊出版前即可公开发布论文手稿，将发表周期从数月压缩至即时\n②对作者：快速宣布研究成果、确立首发优先权，及时获得全球同行的初步反馈\n③对读者：免费、即时获取最前沿研究进展，许多颠覆性重大发现首先出现在arXiv\n2.资源特色\n①全球最大的预印本平台，收录论文超260万篇，每月新增约2万篇，月活用户超500万\n②覆盖物理学、数学、计算机科学、统计学、定量生物学、金融学等学科", url: "https://arxiv.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Cambridge Core", brief: "Cambridge Core 是剑桥大学出版社最新发布的学术资源平台。包括的电子书涵盖了剑桥大学出版社的全学科，均为知名的有影响力的图书收藏。其中人文社科类图书占70%左右, 大约8000余本，理工类4000多本。这里面既有经典图书 (图书回溯到1950年)，也有最新的图书。每月都会有新内容上线，一年多次定期平台功能升级和更新。", functions: "1.资源特色\n①整合剑桥大学出版社所有电子资源，一站式访问超过420种同行评审期刊、49,000+本电子书，文献总量超过180万篇期刊文章\n②平台收录了大量经典与前沿文献，最早可回溯至18世纪，作者队伍中包含多位诺贝尔奖和菲尔兹奖得主\n2.文献检索\n①支持一键式快速检索，可在所有期刊和图书中查找文献；高级检索支持限定作者、题名、出版年份等多条件组合查询\n②按学科体系分类导航（科学与技术合集、人文与社科合集、医学合集），从期刊或图书主页可按卷期浏览文章，快速定位目标文献", url: "https://www.cambridge.org/core", tags: "英文文献" },
+    { category: "英文文献检索", name: "Sci-Down", brief: "Sci-Down是一个面向科研人员的文献检索与下载平台，支持通过 DOI、标题、关键词或作者搜索文献，并提供离线下载和智能翻译功能。", functions: "1.文献检索与获取\n①支持DOI、文献全名、关键词、标题、作者、参考文献等多种检索方式\n②在线预览PDF/EPUB格式，支持批量下载（命令行工具及API接口）\n③作为Sci-Hub的重要互补工具，自动智能切换可用节点", url: "https://www.scidown.cn/", tags: "英文文献" },
+    { category: "英文文献检索", name: "RePEc", brief: "RePEc创建于1997年，是由分散在全球51个国家的100多名志愿者无偿建立的合作型数据库系统，致力于收集和传播经济学工作论文、期刊文章及软件工具等研究成果。其核心是一个经济学的工作论文、期刊文章以及应用软件的数据库。", functions: "1.资源特色\n①全球最大的经济学开放获取书目数据库，由全球志愿者协作维护，收录530万条研究条目（工作论文、期刊文章、图书章节等），其中470万条提供全文下载\n②数据来自2,000多个参与机构（包括Elsevier、Springer等主要出版商），内容最早可追溯至1990年代\n2.文献检索\n①通过IDEAS（美联储圣路易斯分行）或EconPapers两大平台检索，支持标题、作者、JEL分类代码等字段限定及布尔逻辑\n②可查看每篇文献的参考文献和被引信息，支持向前向后追溯学术脉络\n3.特色服务\n①NEP新经济论文报告：每日邮件推送90余个经济学细分领域的最新工作论文，是平台最具特色的主动推送服务\n②RePEc Biblio精选文献集：领域专家精选的核心文献，按树状结构组织，可逐级下钻探索分支方向", url: "http://repec.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "JAMA", brief: "JAMA（The Journal of the American Medical Association，《美国医学会杂志》）是全球最著名、最权威的综合性医学期刊之一，与NEJM、The Lancet和BMJ并称为“四大顶级医学期刊”。JAMA 的核心价值在于其权威性、广泛的影响力和对临床实践的指导作用。", functions: "1.资源特色\n①访问JAMA主刊及JAMA Network Open、JAMA Health Forum等13本临床医学期刊的全文\n②获取原创研究、系统综述、临床指南等经过严格同行评审的内容\n2.文献检索\n①通过作者、日期、文章类型等多维度组合检索，快速锁定目标文献\n②订阅特定主题或检索式的邮件提醒，第一时间获取新文献\n③一站式检索所有子刊，系统自动推荐相关文章\n3.多媒体学习\n①观看手术视频、专家访谈及临床技术更新\n②通过官网或JN Listen App收听播客，包括主编总结和临床评论\n③利用JAMA+专题网站（如JAMA+ AI、JAMA+ Women's Health）深入学习特定领域\n4.个人学术档案\n①系统自动生成作者档案，统计发文量\n②档案可连接ORCID和SciENcv平台同步", url: "https://jamanetwork.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "NEJM", brief: "《新英格兰医学杂志》（The New England Journal of Medicine，简称NEJM）是全球享有盛誉的顶级综合性医学期刊，也是“四大顶级医学期刊”之首 。NEJM以其科学严谨性、学术权威性和临床相关性著称。它发表的许多研究常能改变全球的临床实践指南。其影响因子长期位居全球医学期刊前列，这反映了其学术影响力。", functions: "1.资源特色\n①创刊于1812年，世界四大顶级医学期刊之一，2024年影响因子78.5，全科医学领域排名第一\n②涵盖原创研究、综述、病例报告、社论等，每期至少有一项研究成果直接改变临床实践\n③子刊群：NEJM Evidence（循证方法）、NEJM Catalyst（医疗服务创新）、NEJM AI（医学人工智能）\n2.文献检索\n①支持基本检索和高级检索（作者、卷期、文章类型、布尔逻辑），结果可按学科、被引次数筛选\n②免费注册个人账户，每月可免费阅读一篇订阅文章；绑定机构后可远程访问\n③保存文章和检索式，设置20个医学专科的主题邮件提醒", url: "https://www.nejm.org/", tags: "英文文献" },
+    { category: "英文文献检索", name: "BMJ", brief: "BMJ的全称是British Medical Journal（英国医学杂志）。它创刊于1840年，是全球顶级综合医学期刊，由英国医学会（BMA）出版。", functions: "1.资源特色\n①创刊于1840年，世界四大顶级医学期刊之一，以“直接改善患者健康”为宗旨，研究成果常受全球媒体与政界关注\n②旗下69余种医学期刊，包括完全开放获取期刊及混合型期刊\n2.独特服务\n①BMJ Best Practice：循证临床决策支持工具，涵盖90%以上常见病症，提供诊断、治疗和管理的快速指导，支持移动端离线使用\n②为患者和公众评审员支付酬劳（50英镑或一年在线订阅），确保研究回应患者关切（2025年起）\n③率先要求投稿作者共享原始数据与分析代码，提升研究复现性\n3.临床工具与教育资源\n①提供500多份患者传单、250多个医学计算器及共病管理器，集成临床参数\n②移动APP自动追踪继续医学教育/职业发展（CME/CPD）活动，可与电子病历系统集成", url: "https://www.bmj.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "The Lancet", brief: "The Lancet（中文常译为《柳叶刀》）是全球最具影响力和历史最悠久的综合性医学周刊之一，与NEJM、JAMA和BMJ并称为“四大顶级医学期刊”。它以其极高的科学权威性、对社会公平的倡导和全球健康的关注而闻名于世。", functions: "1.核心影响力\n①论文发表的至高荣誉，代表工作具有全球性影响\n②在线投稿系统与同行评审，稿件未被接受可免费转移至旗下其他期刊并附带审稿意见\n2.资源特色\n①获取最新、最能改变临床实践的科学证据和深刻全球卫生见解的核心来源\n②免费注册账号后可访问额外内容，自定义文章更新和阅读列表", url: "https://www.thelancet.com/", tags: "英文文献" },
+    { category: "英文文献检索", name: "Anna's Archive", brief: "安娜的档案是一个非营利性的开源搜索引擎，它本身并不托管非法资源，而是通过聚合全球各大知名数字图书馆（如 Library Genesis, Z-Library, Sci-Hub 等）的元数据，为用户提供一个统一的搜索入口。其宗旨是保存人类知识的火种，确保即便在某些平台失效的情况下，人类文明的数字记录依然可以被检索。", functions: "1.资源特色\n①自称为“人类历史上最大的完全开放图书馆”，整合Z-Library、Library Genesis（创世纪图书馆）和Sci-Hub三大影子图书馆资源，聚合超过3500万册图书和1亿篇学术论文的元数据\n②自身不直接存储文件，而是提供指向第三方来源（Z-Library、LibGen、Sci-Hub）及IPFS、BitTorrent等多渠道下载链接\n③已发布总量超过521TB的种子文件，并通过IPFS分布式存储进行去中心化备份，数据涵盖书籍、论文、杂志及元数据记录\n2.文献检索\n①支持按标题、作者、ISBN、DOI、MD5等多种方式检索，覆盖多语言（含中文简繁体）\n②结果可按语言、文件格式（PDF/EPUB）、内容类型（书籍/小说/漫画/杂志）、新旧程度等筛选，亦可按随机排序\n③搜索结果页面标注文件来源库（Z-Library/LibGen/Sci-Hub），并提供低俗（免费需过验证码）和高速（付费会员）两种下载通道\n3.数字保存\n①通过IPFS星际文件系统和BitTorrent技术实现数据分布式存储，防止单点失效或被屏蔽导致的数据完全丢失\n②公布521TB种子文件及全部源代码和元数据，鼓励全球志愿者参与数据镜像备份\n③2025年完成对Spotify平台256亿条元数据和8600万个音乐文件的抓取存档，构建全球最大公开音乐元数据库\n4.隐私保护与开源生态\n①支持Tor匿名访问，承诺不记录任何搜索与下载历史\n②平台代码和元数据完全开源，鼓励全球开发者参与共建“图书馆备份计划”\n③ 非官方生态系统丰富：存在多种第三方API封装库（Dart/Python/JS）及CLI命令行工具（annas-mcp），支持编程式批量检索和下载", url: "https://annas-archive.io/", tags: "英文文献" },
+// ===================== 专利检索 =====================
+{ category: "专利检索", name: "专利检索及分析", brief: "国家知识产权局专利检索及分析系统是由中国国家知识产权局（CNIPA）官方推出的免费、权威、功能强大的专利信息服务平台，面向公众、企业、科研机构和知识产权从业者提供全面的专利数据检索、分析与下载服务。", functions: "1.专利检索\n①提供常规检索、高级检索、命令行检索、药物检索、导航检索、专题库检索等多种检索方式\n②支持法律状态查询、同族查询、引证/被引证查询等\n2.数据分析\n①支持申请人分析、发明人分析、区域分析、技术领域分析等\n②自动生成图表，支持图表保存与导出\n3.其他服务\n①专利全文PDF批量下载\n②提供英文、日文文献摘要及全文的机器中文翻译", url: "https://pss-system.cponline.cnipa.gov.cn/conventionalSearch", tags: "专利检索" },
+{ category: "专利检索", name: "专利信息服务平台", brief: "CNIPR是由知识产权出版社有限责任公司开发和运营的商业级专利检索与分析系统，是目前中国最主流的商业化专利数据库之一。", functions: "1.专利检索\n①提供中国专利（含港澳台）、国外专利的检索服务\n②支持法律状态检索、失效专利检索、运营信息检索\n2.专利评估系统\n①提供 P2I（Patent to Intelligence）专利价值评估系统，基于大数据处理和语义智能技术，利用专利生命周期、行业类比运营数据等实时预估专利价格\n②集成中国专利信息中心的 PATENT RANK 5.0 系统，从法律、技术、经济维度对中国发明、实用新型专利进行在线自动评价\n3.专利分析系统\n①支持总体、区域、申请人、发明人、技术分类（IPC）五个核心维度的统计分析\n②提供“自建库”和“标引分析”功能，可在自有专利库中进行深度定向分析\n③生成专利地图、技术趋势图、竞争态势图等可视化图表\n4.专利机器翻译\n①新一代“中知慧译”AI专利文献翻译系统，支持中、英、日、德、韩五国语言间的双向互译\n②提供计算机辅助翻译功能（模板、术语词典、相似句复用）\n5.高价值专利挖掘系统\n①基于专利评估与分析系统的综合能力，自动识别和挖掘技术质量高、法律稳定性强、市场应用前景好的专利组合\n②结合专利导航和产业专题数据库，辅助用户发现潜在的高价值专利和空白技术点", url: "http://search.cnipr.com/", tags: "专利检索" },
+{ category: "专利检索", name: "专利之星", brief: "专利之星是由中国国家知识产权局主管、中国专利信息中心开发并运营的官方专利检索与分析平台。", functions: "1.专利检索\n①提供中国专利（不含港澳台）、国外专利的检索服务\n②支持表格检索、专家检索、单号检索", url: "https://www.patentstar.com.cn/", tags: "专利检索" },
+{ category: "专利检索", name: "专利汇", brief: "PatentHub专利汇整合了全球104个国家和地区超过1.68亿专利数据，提供检索、分析、下载及监控等服务。", functions: "1.专利情报系统：专利检索、统计分析、可视化管理\n2.专利挖掘系统：专利地图、专利组合分析、企业画像\n3.专利预警系统：竞争监控、领域监控\n4.专利交易平台：专利买卖市场\n5.专利数据服务：API接口数据服务、数据本地化、专利导航专题库服务\n6.专利工具集：专利进度查询、专利年费计算、排行榜等", url: "https://www.patenthub.cn/", tags: "专利检索" },
+{ category: "专利检索", name: "上海市知识产权专利检索分析平台", brief: "上海市知识产权局主办的公益性专利信息服务系统，重点支持新能源、生物医药、集成电路等产业。", functions: "1.专利检索\n①支持申请号/公开号、申请人/发明人、关键词、法律状态、IPC分类检索、外观分类检索\n②提供概念检索、企业名称关联检索、中英文双语检索等辅助功能\n③检索结果可一键收藏至个人自建库\n2.专利分析系统\n①配置国家知识产权局在线专利信息分析系统\n②支持申请人、发明人、IPC分类、技术领域等多维度统计分析及图表展示\n3.专利导航\n①已发布56项市级专利导航项目成果，覆盖新能源、生物医药、集成电路、汽车制造等重点产业\n②描绘产业技术路线图、市场竞争格局和创新突破方向\n4.专利交易与价值评估\n①提供专利价值评估功能，支持专利交易对接服务\n5.专利预警与定制服务\n①支持特定技术领域或竞争对手的专利监控与预警\n②提供专利信息定制推送服务\n6.专题数据库与自建库\n①建设12个专利专题数据库，覆盖上海重点产业\n②提供自建库功能，已形成50个公共专利库与132个用户自建库\n7.其他特色服务\n①高校和科研机构存量专利盘活行动：公开存量专利，推动供需对接与转化运用\n②知识产权综合管理系统：支持在线知识产权信息管理和专利申请流程管理", url: "https://xxfw.sipa.sh.gov.cn/search/#/home", tags: "专利检索" },
+{ category: "专利检索", name: "北京市知识产权公共信息服务平台", brief: "北京市知识产权局主办的公益性城市创新公共信息服务基础设施，涵盖专利、商标、地理标志等多元数据。", functions: "1.专利检索\n①支持法律状态检索、逻辑检索、检索提示、同义词检索、关键字检索、二次检索、IPC提示检索、企业名称关联检索、表格检索、批量下载等功能\n②面向全球提供专利文献数据超1.74亿件\n③配备专利文献在线翻译功能，并对同词不同意词汇进行汇总甄别，建立专项数据词库\n④支持化学结构式检索\n2.数据统计分析\n①支持对专利申请量、授权量、有效专利及PCT数据的实时视频率统计分析\n②利用可视化工具实现对行业词表、园区企业等词表的定时管理，支持数据更新后实时刷新分析结果\n③提供集成电路布图设计数据的检索、查询及统计分析服务，助力芯片产业链前端设计\n3.专利专题数据库\n①已发布六大类重点产业专利专题数据库，涵盖北京市九大战略性新兴产业、十大高精尖产业、数字经济产业、未来产业、网络安全产业等，下设40个二级产业、190个细分技术领域\n②在未来产业方向建成包含355个中英文专利检索式的专题数据库，供社会公众查询使用\n③提供高级分析（多维筛选、检索提示、批量下载等）功能，帮助创新主体调研特定技术领域的热点和空白点\n4.知识产权综合信息服务\n①提供政策法规、知识产权保护、专利预警、经典案例、行政处罚及司法判例等专业专题专栏\n②整合中国商标、中国版权、林业新品种、农业新品种、中外专利数据库服务平台等海量数据，提供在线查找服务\n5.专利预警与动态警示\n①提供专利预警支持与动态警示功能，支持对特定技术领域或竞争对手进行持续的专利监控和预警\n②拥有六大突出功能，包括突出政府决策分析、突出预警数据服务、突出专利专题应用、突出专利交易信息等", url: "https://www.beijingip.cn/jopm_ww/loginedPage/web2/onlineSearch/zljsindex.jsp", tags: "专利检索" },
+{ category: "专利检索", name: "专利顾如", brief: "PatentGuru国际化知识产权科技公司，提供全球专利检索、分析与监控服务。", functions: "1.专利检索\n①全球专利数据库包含全球120多个国家及地区的超1.6亿条专利数据，每周更新三次\n②提供8种以上检索方式：简单检索、高级检索、语义检索、IPC分类检索、分类号检索、图像检索、法律检索、批量检索等\n③支持检索结果的二次检索、结果过滤、专利对比、图片对比及多种视图模式（列表模式、首图模式、多图模式）\n2.深度分析\n①提供20+分析维度，从技术价值到市场应用潜力全方位剖析专利信息\n②3D分析工具：用三维地形图展示技术竞争态势，波峰代表技术密集区，波谷代表技术空白点，不同颜色标记不同专利权人，直观呈现竞争格局\n③支持创新词云分析、竞争合作分析、技术趋势分析、专利权人排名分析等\n④高校研发版支持从300多个数据维度、500多万个技术主题对各类技术和公司进行深度分析\n⑤所有分析结果支持Excel、图像和PDF格式导出\n3.监控预警\n①支持对任何关键词、申请（专利权）人或发明（设计）人进行监控，每周发布超10万项新增专利\n②支持自定义自动预警格式和频率，可查看存档的历史记录\n③可定时生成技术跟踪报告", url: "https://www.patentguru.com/cn", tags: "专利检索" },
+{ category: "专利检索", name: "佰腾专利网", brief: "佰腾网是国内领先的知识产权大数据与智能化服务平台，提供专利检索、分析、管理、交易及代理服务。", functions: "1.专利检索\n①支持简单检索、高级检索、语义检索、IPC分类检索、外观检索、法律检索、二次检索、排除检索、批量检索等9种检索方式\n②收录全球108个国家及地区超1.8亿件专利数据，中国专利数据每周更新两次\n③支持批量导入TXT/EXCEL文件进行多专利号检索\n④提供图像检索功能，支持上传图片比对中国及美国外观设计专利\n⑤支持法律状态细分查询（专利许可、质押等5类）、同族专利、引证信息等深度信息\n⑥配备技术关键词标签推荐检索功能，专利详情页自动列出10个技术关键词并支持一键检索\n2.AI智能应用\n①搭载最新大模型技术，提供检索式生成、知识图谱、侵权对比等智能化辅助工具\n②支持AI语义检索，自动识别技术方案中的现有技术不足和创新技术效果，以标准化格式输出总结\n3.数据分析与报告\n①支持申请人、发明人、IPC分类、技术领域等多维度统计分析和图表展示\n②提供专利价值评估、专利报告统计分析等多种分析功能\n③支持自定义分析及可视化图表呈现\n④面向政府提供知识产权大数据服务系统，实现区域专利总量实时监控、核心产业分析及非正常专利申请预警", url: "https://www.baiten.cn/", tags: "专利检索" },
+{ category: "专利检索", name: "SooPAT专利搜索", brief: "SooPAT是一个免费、简洁、高效的中英文专利检索平台。", functions: "1.专利检索\n①中国和世界专利搜索，支持使用中文查询全球各国专利\n②表格检索（多字段组合检索）、IPC分类检索、语句检索\n③高级检索支持字段间逻辑运算（AND、OR、NOT）及模糊搜索\n④检索结果支持二次检索、过滤及多种视图模式（列表模式、多图模式）\n⑤支持关键词检索、申请人检索、发明人检索、申请号检索等多种方式\n⑥智能AI语义检索（高级会员功能），可根据自然语言理解查询意图\n2.专利分析与统计\n①专利分析功能完全免费，可对专利申请人、申请量、专利号分布等进行分析，用专利图表表示\n②支持从申请日、申请人、分类号等多维度进行统计分析\n③支持钻取分析、分析结果的二次分析（高级会员功能）\n3.平台特色与智能辅助\n①智能附图：专利详情页自动显示附图标记含义（高级会员功能）\n②支持图片检索外观专利、发明和实用新型（高级会员功能）\n③检索结果页面的实时分析：高级会员版支持专业级分析\n④支持相似专利检索（高级会员功能）", url: "https://www.soopat.com/", tags: "专利检索" },
+{ category: "专利检索", name: "Drugfuture药物在线", brief: "药物在线网站聚焦于全球药物研发信息，提供药物信息资讯、药物科学数据库、专利信息检索下载等。", functions: "1.专利检索\n①中国专利：收录自1985年以来的全部中国专利数据（发明、实用新型、外观设计），支持专利申请号或公开公告号检索，可免费下载PDF/TIF格式全文并支持在线查看，专利原文基于中国国家知识产权局\n②美国专利：可直接下载自1790年至今美国专利商标局公布的所有专利申请公开文本和专利授权文本，提供PDF全文打包下载，支持专利申请公开号（11位）或授权公告号（1-8位数字）检索\n③欧洲及其他国家专利：支持欧洲专利局公布的专利全文下载（PDF格式），可检索的专利覆盖PCT、欧洲、美国、英国、日本、德国、法国等，支持通配符加零补足数字编号\n2.药物及化学数据库\n①美国FDA药品专利库：收录美国FDA认可并公布的所有有效药品专利，支持以专利号或药品通用名等维度检索\n②合成路线数据库：包含近7000种已上市/在研药物的合成路径信息，支持CAS号、通用名、化学名、结构式、分子式等多维度检索\n③药品标准查询：收载国内外药品标准及药典目录和全文（如日本药典JP19版），支持模糊检索和标准索引查询\n④美国FDA药品数据库：可查询药品批准信息、橙皮书专利与独占期数据", url: "https://www.drugfuture.com/patent/", tags: "专利检索" },
+{ category: "专利检索", name: "企知道专利检索平台", brief: "企知道是全球科创大数据AI平台，提供高级检索、语义检索、图像检索、批量检索、法律检索及专利分析报告。", functions: "1.专利检索\n①涵盖来自全球多个国家和地区的丰富数据库\n②提供高级检索、语义检索、图像检索、批量检索、法律检索\n2.专利分析：可创建技术全景分析报告、企业专利分析报告、企业专利对比报告、产业专利分析报告、区域专利分析报告", url: "https://patents.qizhidao.com/", tags: "专利检索" },
+{ category: "专利检索", name: "度衍专利检索", brief: "度衍专利检索是全球专利大数据平台，拥有1.8亿+全球专利数据，提供多种检索方式和AI工具。", functions: "1.专利检索：提供高级检索、图像检索、智能检索、法律检索等多种检索方式\n2.AI工具：提供智能技术问答、智能专利检索、专利侵权对比、智能申请前评估等功能\n3.工作平台\n①可搭建我的个人专题库、行业专题库\n②提供分析报告管理、标引字段管理、我的商标预警等服务", url: "https://www.uyanip.com/", tags: "专利检索" },
+{ category: "专利检索", name: "世界知识产权组织PATENTSCOPE", brief: "WIPO官方运营的全球专利数据库与检索系统，免费开放国际专利信息。", functions: "1.专利检索\n①提供5种检索方式：简单检索、高级检索、字段组合检索、跨语种扩展检索、化合物检索，支持包括中文在内的10种检索语言\n②简单检索下设7个预设字段：首页、任意字段、全文、识别码/编号、国际分类、名称、公布日\n③跨语种信息检索（CLIR）：将检索词自动翻译为13种语言并同时检索，显著扩展检索广度\n④支持IPC（国际专利分类）和CPC（合作专利分类）检索\n⑤化合物化学结构检索：支持结构式和子结构检索，需免费创建WIPO账户后使用\n3.专利数据覆盖范围\n①收录全球1.27亿份专利文献，其中包含540万份已公布的PCT国际专利申请\n②涵盖全球70多个国家及地区专利局的专利文献，包括美国、日本、中国、韩国及欧洲专利局\n③PCT申请每周四公布，当天即可在PATENTSCOPE中检索，快于其他任何数据库\n④2023年起新增非专利文献检索功能，与IEEE合作收录近500万份非专利文献，并配有专用检索字段\n3.专利分析与统计\n①点击检索结果列表中的“分析”图标，可对检索结果进行统计分析和图形化展示\n②可分析多达25条检索结果，默认显示前10个申请人、IPC代码等信息\n③支持同族专利查看，以树状阅览模式呈现专利家族及各局申请进程", url: "https://patentscope.wipo.int/search/zh/search.jsf", tags: "专利检索" },
+{ category: "专利检索", name: "美国USPTO", brief: "美国专利商标局官方平台，提供美国授权专利和公开申请的检索服务。", functions: "1.专利检索\n①支持对1976年以来全文的美国授权专利和2001年3月15日之后公布的专利申请进行全文检索，并可浏览和打印1790年以来的专利说明书扫描图像\n②提供基本检索和高级检索两种模式，检索字段涵盖专利权人、发明人、分类号、申请日等\n2.专利电子申请与状态查询\n①专利中心（Patent Center）整合在线专利申请、文件提交、申请状态查询及文件管理功能\n②全球档案（Global Dossier）可供公众查阅美国及其他参与局专利申请的审查历史文件\n3.AI辅助检索工具\n①DesignVision（2025年7月推出）：基于AI的外观设计专利图像检索工具，支持检索全球80多个注册机构的外观设计、商标及工业设计数据\n②Similarity Search：内置于PE2E Search平台，可依据申请文本内容自动生成检索结果\n③Automated Search Pilot Program：在实质审查前为申请人提供AI自动生成的现有技术检索结果", url: "https://www.uspto.gov/patents", tags: "专利检索" },
+{ category: "专利检索", name: "欧盟EPO", brief: "欧洲专利局提供全球领先的专利信息和服务体系，核心搜索工具为Espacenet。", functions: "1.专利检索\n①Espacenet：免费检索全球100多个国家/地区的超1.5亿份专利文献，支持智能搜索、高级搜索及CPC/IPC分类检索，内置专利翻译工具Patent Translate\n②Global Patent Index（GPI）及EP全文检索：付费专业工具，满足深层次检索、批量和统计分析需求\n2.专业数据与商业情报服务\n①Open Patent Services（OPS）API：供开发者集成检索、法律状态、专利族等信息\n②PATSTAT数据库：商业用户可进行复杂统计分析、可视化和数据下载；PATSTAT Online提供更便捷的Web访问和数据导出\n3.AI与数字化工具\n①法律互动平台（LIP）：基于生成式AI的专利法对话式问答\n②CPC文本分类器（AI-powered CPC Text Categoriser）：利用AI为技术文本推荐精确的CPC分类号\n③Deep Tech Finder：连接欧洲深度科技初创企业、投资者和高校", url: "https://www.epo.org/en/searching-for-patents", tags: "专利检索" },
+{ category: "专利检索", name: "欧洲专利数据库", brief: "Espacenet是由欧洲专利局开发的免费在线专利信息检索系统。", functions: "1.专利检索\n①收录全球100多个国家超1.6亿件专利文献，每日更新，最早可追溯至1782年\n②多模式检索：支持智能搜索、高级检索（字段组合）、IPC/CPC分类检索\n②机器翻译：内嵌Patent Translate工具，支持中、英、日、韩、俄等10余种语言互译", url: "https://worldwide.espacenet.com/", tags: "专利检索" },
+{ category: "专利检索", name: "谷歌专利检索", brief: "Google Patents是谷歌推出的免费专利搜索引擎，整合了全球100多个专利局的专利数据。", functions: "1.专利检索\n①收录全球100多个专利局超1.2亿份专利文献，涵盖USPTO、EPO、WIPO、JPO等主要专利机构，支持简单检索（关键词、专利号、发明人、申请人）和高级检索（申请日、专利局、法律状态、CPC分类等字段限定）\n②非英语专利文献自动翻译为英语，支持仅用英文关键词检索外文专利\n2.现有技术与非专利文献集成\n①集成“Prior Art Finder”工具，同时检索专利和Google Scholar中的学术文献，帮助判断发明创新性\n②Google Scholar文献经机器学习进行CPC分类，便于在专利检索中发现非专利文献\n3.专利可视化分析与引文\n①支持专利地图可视化（展示专利与发明人关系图谱）、引文分析（向前/向后引用）、按CPC分类分组查看检索结果\n②提供智能聚类与筛选（按专利状态、诉讼信息等筛选，按专利家族去重）", url: "https://patents.google.com/", tags: "专利检索" },
+{ category: "专利检索", name: "澳大利亚专利检索", brief: "AusPat是由澳大利亚知识产权局运营的官方免费专利数据库。", functions: "1.专利检索\n①支持快速检索和结构化检索，检索条件包括分类号、专利号、申请人、发明人或关键词\n②收录1904年以来的澳大利亚专利说明书全文，以及2006年以来的专利申请审查案卷信息\n2.专利类型与法律状态\n①可检索澳大利亚标准专利和创新专利\n②提供专利法律状态查询（有效、审查中、已失效）及缴费信息", url: "https://ipsearch.ipaustralia.gov.au/patents/", tags: "专利检索" },
+{ category: "专利检索", name: "韩国工业产权信息服务中心(KIPRIS)", brief: "KIPRIS由韩国知识产权局运营，免费提供韩国及全球主要国家的专利、商标等信息检索。", functions: "1.专利检索\n①提供简单检索和高级检索两种模式，高级检索包含发明名称、IPC、申请号、日期、申请人等多个检索项目，支持布尔逻辑算符（AND/OR/NOT/XOR）、位置算符（NEAR）、短语检索（\"\"）、通配符等检索技巧\n②KPA数据库支持英文关键词检索韩国发明专利，方便非韩语用户使用\n2.分析统计\n①支持对申请人、发明人、分类号、日期等维度进行统计分析，并可定制分析结果\n②检索结果可导出著录项目数据、分类信息、描述和权利要求书、法律状态以及完整的专利扫描件，并支持批量下载\n3.AI数据与开放平台\n①通过KIPRIS Plus平台提供Open API和Bulk Data下载服务，支持用户获取126种知识产权开放数据产品并自建数据库\n②免费开放7类AI学习知识产权数据，包括韩国/美国专利出版物、审查意见书、专利家族机器翻译数据、CPC信息、客户咨询案例集等", url: "https://www.kipris.or.kr/khome/main.do", tags: "专利检索" },
+{ category: "专利检索", name: "英国专利检索", brief: "英国专利检索系统（One IPO Search）是英国知识产权局推出的官方专利信息检索工具。", functions: "1.专利检索\n①支持用日常语言描述产品或技术的简单关键词检索，无需掌握复杂技术术语\n②可按专利权利人名称、发明人名称、代理人、关键词、分类号、申请号、公布号、授权日期等多字段检索\n③检索结果可按关键日期、专利状态（有效、审查中、已失效等）、是否开放许可、是否通过绿色通道加速申请等条件筛选\n④支持补充保护证书（SPC）的检索，数据可追溯至1998年\n2.可视化数据分析\n①支持直接从系统生成图表，可视化展示专利申请趋势、申请人排名等信息，便于竞争对手分析和市场趋势洞察\n②检索结果可下载为CSV格式文件，供进一步分析和团队共享\n3.法律状态查询与专利管理\n①通过UKIPO账户可随时检索和查看英国专利的法律状态（有效、审查中、已失效等）\n②支持在线快速修改专利信息，通过数字化自助服务完成专利续展\n③支持在线提交专利申请，可任意顺序填写内容、保存草稿并与同事协作", url: "https://www.gov.uk/search-for-patent", tags: "专利检索" },
+// ===================== 文献阅读与管理 =====================
+{ category: "文献阅读与管理", name: "Zotero", brief: "Zotero 是一款免费、开源、跨平台的学术文献管理工具，由美国乔治·梅森大学开发，被誉为“科研人的第二大脑”。", functions: "1.抓取文献信息\n①安装浏览器插件（Chrome / Firefox / Edge）后，在 知网、Web of Science、PubMed、IEEE Xplore、Springer、ScienceDirect、Google Scholar 等网站点击 Zotero 按钮，即可自动保存：文献标题、作者、期刊、年份、DOI、PDF 全文\n2.文献库管理\n①支持创建 文件夹、标签、收藏集 分类文献\n②可添加 笔记、高亮、附件（如补充材料、PPT）\n③全文搜索：支持在 PDF 和笔记中关键词检索\n④支持中文界面与中文文献识别（需配置）", url: "https://www.zotero.org/", tags: "文献管理,文献阅读" },
+{ category: "文献阅读与管理", name: "EndNote", brief: "EndNote是由科睿唯安开发的旗舰型文献管理软件，与 Web of Science 无缝集成。", functions: "1.文献管理与组织\n①在个人电脑建立本地文献数据库，可按课题、主题等创建多级文献组进行分级管理\n②支持通过过滤器批量导入知网、WoS、PubMed等在线数据库的检索结果\n③支持手工录入题录信息、从已有PDF全文自动抓取元数据生成题录\n④每条文献记录可上传最多45个PDF、PPT、图片等附件完成全文与元数据关联\n⑤可为文献记录添加自定义标签（名称和颜色），方便快速分类检索\n2.边写作边引用 （Cite While You Write）\n①在Word和PPT中安装插件，撰写论文时可一键插入引文，系统自动生成符合投稿期刊要求的参考文献列表，更改引用文献后自动更新全篇编号与文献列表\n②支持Apple Pages、Google Docs、LibreOffice等多款办公软件\n3.AI辅助工具\n①关键提要（Key Takeaway）：基于AI对PDF全文自动提炼结构化要点，帮助快速判断文献相关性\n②Research Assistant（生成式AI工具）：与PDF全文对话问答、自动翻译全文或选中段落、总结选中文字等\n③期刊匹配（Find a Journal）：输入标题与100字内摘要，AI实时推荐适合投稿的期刊\n④Cite from PDF：写作时直接引用PDF内容并自动生成参考文献\n4.协作与共享\n①支持与最多1000名合作者共享个人文献数据库，并可灵活分配“只读”或“读写”权限\n②所有成员对共享库的标注、批注和使用记录可实时同步", url: "https://endnote.com/zh/", tags: "文献管理,文献阅读" },
+{ category: "文献阅读与管理", name: "NoteExpress", brief: "NoteExpress是国内主流专业参考文献管理软件，推出跨平台云端版“青提学术”。", functions: "1.一站式文献检索与采集\n①支持CNKI、万方、维普、WoS、PubMed、ScienceDirect等主流中英文数据库联机检索\n②提供浏览器插件一键抓取网页文献题录；支持全文导入、格式化文件导入、手工录入等多种采集方式\n③青提学术内置青提引擎实现智能检索，AI自动生成文献综述\n2.文献分类与管理\n①支持多级虚拟文件夹系统，有效管理百万级文献题录与全文\n②内置查重功能高效筛除重复题录，支持自定义标签、优先级等标识符辅助精细化管理\n③支持PDF附件与题录关联，在软件内嵌的PDF阅读器中实现批注、高亮、笔记与要点解析\n3.智能写作与参考文献格式化\n①深度集成Word与WPS，支持“边写边引”，随时在文中插入引文，文末自动生成参考文献列表\n②内置5000多种中外学术期刊和学位论文的参考文献输出样式\n③首创多语言模板，可根据引用文献语言自动差异化输出，有效避免格式错误\n4.AI智能助手\n①提供从题录快速概览到全文深度理解的贯穿式AI辅助，使用户的文献调研和阅读过程更高效省力\n②支持对题录及PDF文献进行AI问答、自动总结、内容翻译及智能综述生成\n③青提学术集成AI润色、降重改写、内容续写与深度研究辅助功能，提升写作效率与原创性\n5.协作与跨平台同步\n①本地单机版所有数据存储在用户设备，适合对数据隐私有较高要求的用户\n②云端版“青提学术”支持小组协作，可邀请成员共同添加文献与笔记，实现知识的共享与共创\n③支持多终端（Windows/Mac/iOS/Android）实时同步", url: "https://jc.inoteexpress.com/dynamo/index.html", tags: "文献管理,文献阅读" },
+{ category: "文献阅读与管理", name: "Mendeley", brief: "Mendeley是由爱思唯尔开发的免费参考文献管理与学术社交平台。", functions: "1.智能文献管理\n①自动提取元数据：拖入 PDF，Mendeley 可自动识别标题、作者、期刊、年份等\n②手动修正与补全：支持编辑字段、添加 DOI、ISSN、关键词等\n③文件夹与标签分类：按项目、主题或课程组织文献库\n④全文搜索：在所有 PDF 和笔记中快速查找关键词\n2.内置 PDF 阅读器 + 批注\n①直接在 Mendeley 桌面客户端中阅读 PDF；支持：高亮、下划线、删除线、添加文本注释、手写笔记（仅部分平台）、书签标记重点页\n②所有批注自动保存并与文献条目关联，可导出", url: "https://www.mendeley.com/", tags: "文献管理,文献阅读" },
+{ category: "文献阅读与管理", name: "小绿鲸英文文献阅读器", brief: "小绿鲸是一款AI驱动的英文文献阅读与科研效率工具，集翻译、笔记、文献管理、AI解读等功能于一体。", functions: "1.专业级学科翻译\n①基于自研 “鲸灵AI科研大模型”，覆盖 113个一级学科\n②内置 25万+专业术语库，医学、材料、化学、生物等术语翻译准确率高\n③支持 用户自定义术语\n2.全文 & 截图翻译\n①一键翻译 PDF/DOC 英文文献，1:1 还原文档格式\n②支持 扫描件、图表、公式区域截图翻译，OCR 识别精准\n③可导出为 Word 或保留双语对照排版\n3.AI 智能文献解读\n①一键提炼 6大核心要素：研究背景、问题、方法、结果、结论、创新点\n②自动生成思维导图式文献概要\n③图表智能提取 + AI 解读：可对图/表提问\n4.高效笔记系统\n①支持高亮、批注、手写笔记（平板端）\n②笔记可切换为 大纲模式 or 思维导图模式\n③提供 10+ 科研场景模板\n5.文献管理 & 检索\n①无限级文件夹 + 多标签分类\n②智能搜索（按标题、作者、笔记内容、标签等）\n③一键抓取 参考文献 & 引证文献", url: "https://www.xljsci.com/?channelCode=ZUqKcM", tags: "文献管理,文献阅读" },
+{ category: "文献阅读与管理", name: "Scholaread", brief: "Scholaread（靠岸学术）是一款集论文PDF阅读、学术翻译、文献管理、笔记于一体的AI学术助手。", functions: "1.文献管理与阅读\n①全球领先的重排技术：将复杂双栏PDF转换为适合手机、平板等移动设备的单栏流式排版，无需放大或缩小屏幕即可清晰查看图文内容\n②多端同步：支持电脑、网页、平板、手机四端文献库及阅读进度、笔记数据实时云端同步，支持Apple Pencil手写标注\n③Zotero集成：一键从Zotero导入文献库，标签列表可原样同步，无需额外配置\n④自动化文献管理：导入时自动识别PDF中的DOI，抓取标题、作者、期刊等完整元数据；支持多格式导出（BibTeX、RIS等）\n2.AI辅助精读\n①AI自动高亮核心：自动提取研究目标、方法、结论和创新点并集中展示于侧边栏，快速定位全文骨架\n②AI智能问答：选中任意段落或概念，可基于全文内容进行对话式提问（如“这篇文章的核心论点是什么？”），AI附原文出处提供精准回答\n③AI选题与文献综述：输入大致研究方向，AI自动扫描整个文献库并推荐潜在研究课题，进一步梳理研究框架和支撑论据\n④AI文献速览：鼠标悬停于文章封面即可立即查看摘要与核心观点总结，快速判断文献相关性\n⑤图表AI解释：所有图表自动分类陈列，选中即可用自然语言拆解数据趋势、对比分析结果及提炼核心结论\n3.学术翻译\n①逐段对照全文翻译：支持中、英、法、德、日、韩等17种语言的逐段对照翻译（一段原文+一段译文），保留原图表、公式与参考文献格式\n②多模式翻译：除全文翻译外，还提供划词翻译、截图翻译等多种即时翻译方式\n4.智能写作与引用\n①参考文献引用助手：在Word/WPS中选中文字，AI自动从文献库中智能推荐最相关的参考文献条目，一键以目标格式插入文内引用和文末列表\n②内置7种主流引用格式（GB/T 7714-2015、APA 7th、MLA 9th、IEEE、Chicago、Bluebook、OSCOLA），可覆盖95%+全球学术期刊要求\n③支持简体中文、繁体中文、英文三种语言格式切换，自动识别中英文混合排版并智能适配标点符号与姓名格式\n④引用插件完全免费，无隐藏收费", url: "https://www.scholaread.cn/?ref=yanweb", tags: "文献管理,文献阅读" },
+{ category: "文献阅读与管理", name: "知网研学", brief: "知网研学（原E-Study）是CNKI推出的集文献检索、阅读、管理、笔记、写作与投稿于一体的科研学习平台。", functions: "1.文献资源获取与管理\n①支持从知网五大资源库（学术期刊、博硕士论文、会议论文、报纸、年鉴）直接检索或订阅，通过文献采集助手汇集Springer、ScienceDirect、Wiley等80个国内外数据库题录，也支持本地上传图书、期刊、专利、标准等12种资源类型\n②通过创建专题及子专题实现多层级文献体系化管理，专题内可按被引、下载、学习时间等排序查阅\n③云端存储，多终端自动同步，支持团队学习、组内资源实时共享与在线讨论交流\n2.AI研读（单篇文献阅读）\n①提供渐进式阅读模式（速读→精读→进阶追问），AI一键总结中英文文献核心内容并支持全文翻译\n②单篇文献AI矩阵自动提取研究问题、方法、内容等要素，便于快速提炼核心要点\n③智能阅读支持生成内容速览、章节概要，并可与文献进行对话式问答\n3.文献矩阵与笔记导图\n①文献矩阵支持同一研究主题下多篇文献横向对比，自动提取并对比研究要素，发现研究空白点\n②笔记导图自动将阅读笔记归集到以文献名为根节点的导图中，支持编辑、导出及直接转化为在线创作\n③边阅读边笔记，支持划线、批注、摘录，笔记可关联原文并体系化管理\n4.AI辅写与智能创作\n①支持生成文献综述、文献阅读报告、写作大纲、开题报告、实验设计方案、行业调研报告等文档\n②边写边引，写作界面可便捷插入笔记与文献素材，自动生成并格式化参考文献\n③支持中英互译、段落改写/扩写/缩写、AI润色等功能", url: "http://x.cnki.net/", tags: "文献管理,文献阅读" },
+// ===================== 论文写作 =====================
+{ category: "论文写作", name: "Aibiye", brief: "Aibiye是由长春芝麻开门教育科技有限公司开发的AI学术辅写工具，可在5分钟内生成3万字以上高质量内容。", functions: "1. 高效生成学术内容\n①论文快速成稿：输入选题后，Aibiye可在30秒内生成包含摘要、引言、方法论、结论等完整结构的论文初稿，并提供真实数据、图表、公式等支持\n②开题报告与文献管理：自动生成符合高校要求的开题报告框架，并附带多篇真实参考文献，支持一键导入和格式校对，避免手动整理的繁琐\n③多格式扩展：除论文外，还可生成答辩PPT、任务书、代码段等辅助材料，覆盖学术写作全场景\n2. 智能优化与降\n①一键改写与扩写：提供多种语气改写功能（如学术严谨型、通俗易懂型），帮助降低重复率，节省查重费用\n②语法纠错与格式检查：自动识别语法错误和排版问题，确保论文符合期刊或学术规范\n3. 个性化定制服务\n①200+专业模板库：覆盖理工、人文、社科等学科，支持读书笔记、实验报告、广告文案等多场景\n②选题与大纲规划：根据研究热点智能推荐选题，并生成逻辑严密的论文框架，用户可自定义调整节点和风格", url: "https://www.aibiye.com/?code=OF5nUf", tags: "论文写作" },
+{ category: "论文写作", name: "笔灵AI", brief: "笔灵AI是综合性AI写作平台，提供学术论文、公文写作、营销文案、小说创作等200多个场景的智能写作支持。", functions: "1.学术论文全流程辅助\n①支持一键生成论文，提供开题报告、论文摘要、论文大纲、文献综述、全文初稿的快速生成，覆盖700多个专业领域\n②4分钟内可生成万字初稿，并提供千字大纲免费生成功能\n③提供论文降重和降低AIGC痕迹功能，采用语义级优化方式保持学术表达严谨性\n④上传论文即可生成答辩PPT，服务于从专科生到研究生的各学术层次\n2.AI写作工具\n①提供200多场景写作模板，涵盖公文写作、商业计划书、营销文案、社交媒体内容、教案等\n②支持AI改写、续写、润色功能，可对旧有内容进行创新重写\n③内置AI对话功能，注册即送500AI字数免费试用\n④支持多场景应用，包括商务、教育、娱乐、新媒体、内容创作等领域\n3.AI小说创作\n①提供AI写全篇小说功能，填写小说类型、人物设定等基本信息即可生成整章内容\n②配备小说大纲助手、小说扩写、小说续写、剧情创作等工具\n③提供黄金开头生成、仿写、润色等功能，辅助网文创作\n4.PPT生成与办公辅助\n①提供答辩PPT生成功能，支持2.0升级版\n②支持一键生成工作总结、格式化报告等办公文档\n③提供机关单位、职场等办公场景的写作支持", url: "https://ibiling.cn/tool?from=kyfwxz", tags: "论文写作" },
+{ category: "论文写作", name: "海棠AI", brief: "海棠AI支持中、英、日、韩、俄、泰等多语种论文创作，支持10万至50万字超长论文一键生成。", functions: "1.AI论文生成\n①基于AI5.0与DeepSeek-R1双模型架构，支持三级大纲（章节、小节、子节）的自由无限次生成与修改\n②支持10万字至50万字的超长文写作，涵盖毕业论文、硕博论文、学术专著、教材等长篇学术内容\n③轻量化学术模型支持三分钟内自动生成千字短文初稿，包含题目、摘要、正文草稿及参考文献\n2.参考文献与学术规范性\n①自动整合40余篇近3-5年的真实参考文献，涵盖知网、中科院核心期刊等来源，正文中自动标注出处\n②支持参考文献的跨语种管理，满足不同语言论文的引用需求\n3.数据与图表可视化\n①支持LaTeX原生公式的精准解析与排版，满足数学、物理、计算机等学科的公式写作需求\n②自动整合实验数据生成符合规范的图表，支持数据表、数据图、实例代码的嵌入与自动排版\n③适配含代码段（Matlab/Python等）的论文写作，支持SPSS回归结果等数据处理的学术表达\n4.“投喂AI”个性化训练\n①用户可上传参考资料（TXT、Word、PDF等格式），AI深度学习后再生成大纲与正文，使产出更贴合个人研究方向和写作风格\n②支持上传多个文档，不上传文件则不收取任何费用", url: "https://www.haitanglunwen.com/?pmt=46AF50", tags: "论文写作" },
+{ category: "论文写作", name: "笔启AI论文写作", brief: "笔启AI论文提供从选题、生成、修改到查重的全流程AI论文辅助服务，主推知网查重率稳定控制在10%左右。", functions: "1.AI论文生成\n①支持毕业论文、课程论文、期刊论文、职称论文、专升本论文、学术专著、文献综述、开题报告、任务书、答辩PPT等多种论文类型的AI辅助生成\n②基于AI5.0及Gemini3Pro学术加强版双模型，可实现10万至50万字的超长文写作，支持中文、英语、日语、韩语、俄语、泰语等多语种\n2.全流程论文辅助工具\n①从选题、开题报告、论文任务书、文献综述到写作、答辩PPT等论文全流程提供一站式服务，方便用户按需组合使用\n②可在生成的正文中自由插入图、表、代码、公式，自动匹配40篇近3-5年的知网或中科院真实参考文献，并在正文中给出标注\n③支持多级大纲（二级大纲、三级大纲），可免费生成大纲，支持手动录入或上传资料后由AI生成，支持在正文页面内对大纲进行增删改\n3.无限改稿与售后保障\n①生成的论文正文支持无限次改稿，用户可不断对内容进行完善，改到满意为止\n②若知网查重率超15%或AIGC率超25%，可申请退款\n③采用阿里云加密技术，保障论文隐私安全", url: "https://www.biqiai.cn/?pmt=41DF5B", tags: "论文写作" },
+{ category: "论文写作", name: "笔目鱼英文论文写作", brief: "笔目鱼是小绿鲸团队打造的云端英文论文写作平台，集学科翻译、学术润色、改写降重、SCI高分例句库等于一体。", functions: "1.学科翻译与智能润色\n①学科翻译融入28万+专业术语，覆盖117个一级学科，含医学、理工科等专业化训练，支持全文翻译、段落翻译及多翻译引擎自由切换\n②学科润色精选高影响因子期刊和高被引文献，超1亿+文献数据持续训练，支持英式/美式风格润色、语法校对、时态校正、长难句简化及句式多样化优化\n2.AI辅助写作与改写\n①边写边润：输入中文即可实时查看地道英文译文，实现边写边译、边润的无缝写作体验\n②改写降重：通过同义替换、改变句子结构或调整语气，支持改写、扩写、缩写多种场景，有效降低原文重复率\n③支持同义替换、改变句子结构或调整语气，降低原文重复率，提供改写、扩写和缩写等多种场景\n3.文献阅读与SCI语料库\n①基于1.8亿+文献数据，根据论文主题与段落重点精准推荐高被引、高相关的最新文献\n②30亿+SCI高分例句库，覆盖医学、生物学、化学、物理学、工程与材料学、人文社科等各学科，精选高影响因子期刊数据\n③支持导入pdf、txt、png、链接等多种格式，支持一键同步小绿鲸英文文献阅读器的语料库，边读边写边收藏写作素材\n4.参考文献管理与格式排版\n①支持多种中英文期刊引文格式，联动小绿鲸高效引用和管理参考文献，一键插入引注及参考文献列表，内容修改后引文标号自动更新\n②基于上千种期刊模板，最快1分钟完成投稿文章格式排版，确保符合期刊投稿指南规范", url: "https://www.bmysci.com/?channelCode=keyanmate", tags: "论文写作" },
+{ category: "论文写作", name: "MedPeer天生会写", brief: "MedPeer专注于生物医学领域的一站式科研服务平台，“天生会写”是其核心智能文稿生成模块。", functions: "1.智能文稿生成\n① 支持本科毕业论文、硕士开题报告、期刊论文、文献综述等多种学术文稿的AI辅助生成\n② 支持国自然申请书、地方基金申请书等课题申报材料的智能撰写\n③ 依托3亿篇真实文献大数据，生成的文稿符合各院校和期刊的格式要求，支持多维专家组深度优化\n2.文献调研与AI辅助\n① Deep Search文献调研：基于3亿真实文献精准检索繁难、总结繁难，一键输出带引用源的高质量调研报告\n② 科技文献库：收录4000万篇生物医学文献及4万种期刊，支持全文读写与实时翻译\n③ 文档解读与科学对话：支持上传PDF文档，AI自动总结文献核心要点，可基于文献内容进行问答对话\n3.学术规范与翻译支持\n① 机器翻译与GPT翻译：支持多语言互译，包含生物医学专业翻译引擎\n② 智能选刊：根据论文内容推荐合适的投稿期刊\n③ 知识库管理：支持文献、笔记、素材的云端存储与管理\n4.AI科研绘图\n① 提供海量原创矢量图标和模板，支持拖拽式操作，可自由调整大小、颜色、方向\n② 覆盖科研论文插图、技术路线图、海报、PPT等多种科研可视化需求", url: "https://product.medpeer.cn/product/index/productDetails?page=progendoc&P_S_C=keyanmate", tags: "论文写作" },
+{ category: "论文写作", name: "易笔AI写作", brief: "易笔AI写作是依托AI5.0+DeepSeek-R1学术加强版模型打造的智能化论文写作全流程服务平台。", functions: "1.百万字长文记忆与协作支持\n① 作为全网首批支持100万字级别超长文创作的AI工具，运用独家长文记忆机制，确保AI写博士论文、专著或教材等长篇内容时，章节间逻辑连贯、观点统一，有效防止逻辑断层 。\n② 新增团队协作功能，支持多人同时在线对长文稿件进行降重优化与润色，导师与学生可在云端实时合作，针对特定段落进行即时修改，提升团队协作效率。\n2.教材与专著AI辅助生成\n① 平台不仅在AI写毕业论文、期刊论文章节效果极佳，更针对教师和教育工作者编写教材、学术专著的实际需求，提供了专门的辅助通道。\n② 在写书籍过程中，平台支持多级大纲免费生成，协助作者快速建立起逻辑严密的知识体系框架，并能根据学科特性智能匹配教学案例、习题及参考文献列表，极大拓宽了AI在严肃学术出版领域的应用边界。\n3.定制化高质量初稿\n① 用户通过“投喂AI”功能上传4-50篇专属参考资料，AI深入学习后可生成完全贴合个人研究方向与语感的正文，避免了内容的同质化。\n② 支持在正文中一键嵌入来自知网/中科院等真实数据源的40+篇文献并自动完成规范标注；同时还支持在论文中智能插入技术路线图、坐标图、Python代码及复杂学术公式，一键满足理工科与经管类论文的实证数据展示需求。\n4.学术诚信双保障与退款承诺\n① 针对用户担心的查重率与AI率问题，平台提供强力的一键降重与降AIGC功能，可将查重率稳定控制在10%以内，AI生成内容痕迹降至20%以下。\n② 平台做出明确承诺：在知网或维普等主流检测平台中，若生成论文的AIGC率超过15%或查重率超过15%，用户可申请全额退款。", url: "https://www.yibiai.com/?pmt=41DF5B", tags: "论文写作" },
+{ category: "论文写作", name: "Wordvice AI", brief: "Wordvice AI是一款集“读-写-改”于一体的综合性AI智能写作助手，全球超过360万创作者使用。", functions: "1.AI校对与语法检查\n① 支持英语（12种方言变体）、中文、日语、韩语、德语、法语、西班牙语等12种语言的语法拼写检查，自动检测并纠正语法、拼写、标点、大小写及用词错误，并提供详细的修改建议反馈\n② 可定制编辑模式，实时在线修改，改善句子结构、措辞语气的准确性和流畅度，支持调整多种写作风格针对性完善文章，用户可在Word和Chrome插件中边写边用\n2.AI改写润色\n① 提供流畅（Fluent）、学术（Academic）、创造性（Creative）等5种不同改写模式，用户可根据发表场景灵活控制改写文本的语气语调与内容张力，在不改变原文核心意思的前提下优化词汇、句式、风格和语言流畅度\n② 支持12种语言的改写，适用于论文、报告、留学文书、商业文件等，有效帮助规避抄袭嫌疑\n3.AI在线翻译\n① 支持47种语言之间的自然流畅互译，覆盖英、中、日、韩、法、德、西班牙语等主要语种，提供精准快速的翻译服务\n② 集成于AI文本编辑器，可在同一平台完成翻译、替换原始文本等操作，无需在多个工具间切换\n\n4.AI文本编辑器与学术研究工具\n① AI文本编辑器：将Wordvice AI所有功能整合在一个写作平台中，用户可在同一界面完成改写、总结、引用生成、撰写文章等操作，无需在多个产品间切换\n② 研究工具与文献引用：提供ChatPDF、PDF翻译、PDF摘要等免费科研工具；内置APA、MLA、Chicago、Vancouver等主流格式的引文生成器，自动生成参考文献", url: "https://wordvice.ai/cn", tags: "论文写作" },
+{ category: "论文写作", name: "AIPaperGPT", brief: "AIPaperGPT是集选题构思、大纲定制、正文生成、文献引入、查重降AI于一体的AI论文写作平台。", functions: "1.智能大纲生成\n①60秒内生成立二级/三级智能大纲，支持添加/删除/自定义章节，可在章节级勾选是否需要插入图表、公式、代码\n②生成文稿后可一键切换不同模型对内容进行精调或重写\n③覆盖毕业论文、开题报告、任务书、文献综述、期刊论文、答辩PPT等全学术周期\n2.真实参考文献与多模态生成\n①生成正文时自动引入10-200篇知网、维普查重可溯源、期刊官网可查的真实参考文献，正文标引与文末列表一一对应\n②一键生成科研绘图、数据表格、专业公式（含LaTeX原生解析）、编程代码（Matlab/Python等），符合SCI期刊出版规范\n3.查重与AIGC检测保障\n①提供配套降重工具和降AI率工具：AI降重10分钟完成，人工降重支持保护固定词；降AI率一键将AIGC占比降至20%以下，适配知网严苛版、Turnitin等\n②承诺：知网、万方、维普、格子达等平台查重>15%或AIGC>10%全额退款\n4.无限改稿与安全保障\n①支持一次生成、永久免费无限改稿，改稿过程自动优化重复内容并降低AIGC占比，支持多人在线团队协作\n②采用腾讯云存储及数据加密传输，保障隐私安全", url: "https://www.zhixueshu.net/?i=JsJR", tags: "论文写作" },
+// ===================== 论文查重查AI率 =====================
+{ category: "论文查重查AI率", name: "知网查重", brief: "中国知网（CNKI）官方查重系统，国内高校和科研机构最常用的论文检测平台，需收费。", functions: "1.费用\n①查重个人版：1.5元/千字\n②研究生：每个研究生的学位论文可以享受 3 次免费查重机会，免费服务需要通过学校指定的内部机构申请，个人无法直接使用\n③AIGC：2元/千字\n2.在经费允许的情况下强烈建议使用知网查重", url: "https://cx.cnki.net/#/login", tags: "查重查AI率,降重降AI率" },
+{ category: "论文查重查AI率", name: "维普论文检测系统", brief: "维普官方查重平台，广泛应用于高校毕业论文和职称评审，需收费。", functions: "1.费用\n①查重：4.5元/千字\n②AIGC：38元/篇\n③格式检测：38元/篇\n④勘智智评：48元/篇", url: "https://vpcs.fanyu.com/", tags: "查重查AI率,降重降AI率" },
+{ category: "论文查重查AI率", name: "万方检测", brief: "万方数据官方查重系统，支持学术论文、科研成果等检测，应届生有一次免费查询机会。", functions: "1.费用\n①查重：3元/千字\n②AIGC：3元/千字\n③智能降重：5元/千字\n④降AI率：10元/千字\n2.应届毕业生可通过学信网授权登录万方数据进行一次免费查重", url: "https://check.wanfangdata.com.cn/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "大雅相似度分析", brief: "超星旗下查重平台，侧重中文学术图书、论文等，和知网查重率高度贴合，价格较低，超星账号有5次免费检测机会。", functions: "1.费用\n①查重免费版：基础查重可免费\n②查重付费版：3 元 / 千字，学习通学生有专属优惠\n③超星账号有5次免费检测机会", url: "https://dsa.dayainfo.com/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "iThenticate", brief: "iThenticate是全球最权威的英文论文查重系统，由Turnitin公司开发，被Elsevier、Springer、Nature等绝大多数国际期刊和出版社采用。", functions: "1.费用\n①查重：35元/篇\n②AIGC：30元/篇\n③图片查重：180元/次（最多可包含25张大图/700张组内小图）", url: "https://www.citexs.com/iThenticate", tags: "查重查AI率,降重降AI率" },
+{ category: "论文查重查AI率", name: "PaperYY", brief: "PaperYY是国内知名的免费查重平台，适合毕业论文初稿、期刊草稿等多次检测。", functions: "1.费用\n①免费版：每天一篇，只限中文\n②专业版：3元/万字，只限中文\n③至尊版：1.5元/千字，支持中英文\n④自建库查重：免费，需自己上传数据库\n⑤AIGC：9.9元/篇\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperyy.cn/?scode=d47a556579a9de1fc499a4e4b1482441", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "PaperPass", brief: "PaperPass是国内较早的免费的论文查重平台，采用自主研发的检测算法。", functions: "1.费用\n①免费版：每天五篇，只限中文\n②旗舰版：1.5元/千字，支持中文、英语、德语、西班牙语、法语、意大利语、日语、韩语、葡萄牙语、俄语\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperpass.com/login", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "PaperWord", brief: "PaperWord是一家综合性的免费查重平台，支持中英文论文、毕业论文、期刊论文等。", functions: "1.费用\n①免费版：每天一篇\n②专业版：3元/万字\n③至尊版：1.5元/千字\n④英文版：1元/千字\n⑤全版本限时免费：每天11:11~11:22全版本查重限时免费,每个账户累计可参与2次\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperword.com/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "PaperOk", brief: "PaperOk是一个轻量级论文查重平台，主打免费初稿检测。", functions: "1.费用\n①免费查重：通过完成任务获得免费字符查询，最多可获得30000字符\n②专业版：1元/千字\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperok.com/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "PaperPP", brief: "PaperPP是一个智能查重与降重平台，支持论文查重、AI检测和一键降重。", functions: "1.费用\n①免费查重：通过完成任务获得免费字符查询，最多可获得20000字符\n②专业版：2元/千字\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperpp.com/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "PaperAsk", brief: "PaperAsk是一款学术查重与写作辅助工具，提供论文查重、AI检测、智能降重等功能。", functions: "1.费用\n①免费版：每天一篇\n②专业版：3元/万字\n③至尊版：1.5元/千字\n④英文版：1元/千字\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperask.com/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "论文狗", brief: "论文狗是一个提供免费论文查重服务的平台，主要面向在校大学生。", functions: "1.费用\n①免费版：每天一篇，支持中英文\n②专业版：9.8元/篇，支持中英文\n③至尊版：1元/千字\n④AIGC：每天免费两篇，支持中英文\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.lunwengo.net/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "论文哥", brief: "论文哥是一个提供免费论文查重服务的平台，支持本科、硕博、职称论文的查重检测。", functions: "1.费用\n①免费版：每天一篇，只限中文\n②专业版：3元/万字，只限中文\n③至尊版：1.5元/千字，支持中英文\n④AIGC：19元/千字，只限中文\n⑤自建库查重：免费，数据库需自己上传\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.paperge.com/", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文查重查AI率", name: "FreeCheck", brief: "FreeCheck是一款免费的论文查重工具，每日提供免费查重次数，深受学生喜爱。", functions: "1.费用\n①免费查重：通过完成任务获得免费字符查询或优惠\n②付费版查重：3元/千字（维普数据库）\n③AIGC：20元/篇（维普数据库）\n④格式检测：30元/篇（维普数据库）\n2.适合初稿查询，终稿需用知网、万方等权威查重网站", url: "https://www.freecheck.cn/", tags: "查重查AI率,降重降AI率,免费试用" },
+// ===================== 论文降重降AI率 =====================
+{ category: "论文降重降AI率", name: "茅茅虫", brief: "茅茅虫（MMC）是一个专注于AI驱动的学术写作与论文全流程辅助的智能平台。", functions: "1.费用\n①智能降重：3元/千字\n②降AI率：8元/千字，支持中英文", url: "https://www.mmc.cc/dashboard/aireduction?fromId=8x1bo0y4", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "SpeedAl", brief: "SpeedAI（科研小助手）是一个专注于学术写作辅助的在线工具，核心功能是降重和降AIGC率。", functions: "1.费用\n①专业版：1.6元/千字\n②入门版：2元/千字\n③基础班：1.8元/千字\n④高级版：1.4元/千字\n2.新用户赠送免费或优惠服务", url: "https://speedai.com/welcome?utm=cg&cgv=vzdkjroe1r", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文降重降AI率", name: "快降重", brief: "快降重是一个专注于学术论文降重、查重率优化、AIGC降痕的智能服务平台。", functions: "1.费用\n①免费版：高峰期需排队\n②Pro版：3元/千字\n③ProMax版：9元/千字，保证知网/维普查重率<15%\n④英文版：7元/千字\n2.降重降AI率可选平台，如知网、维普、Turnitin等", url: "https://www.kuaijiangchong.com.cn/?invitationCode=76cee8ddf0e04f5fb71cfe2b7e84225d", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文降重降AI率", name: "早降重", brief: "早降重是一个第三方论文查重与降重服务平台，主要面向高校学生。", functions: "1.费用\n①降重：2.5元/千字\n②降AI率：5元/千字", url: "https://yanweb.paper880.com/zjchong/index.html", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "靠岸妙写", brief: "靠岸妙写是Scholaread（靠岸学术）旗下的AI写作与降重工具，专注于学术场景。", functions: "1.费用\n①套餐一：1.99元/千字，总共20000字符\n②套餐二：0.69元/千字，总共100000字符\n③免费体验2000字符", url: "https://www.scholingo.cn/ai-writer/detector?source=yanweb", tags: "查重查AI率,降重降AI率,免费试用" },
+{ category: "论文降重降AI率", name: "PassGps", brief: "PassGps是一款论文降重与指导系统，提供AI降重、人工降重、查重报告解读等服务。", functions: "1.费用\n①强力降重：4.5元/千字\n②超级降重：5元/千字\n③超级降AI率：3.5元/千字\n④智能降AI率：3元/千字", url: "https://www.passgps.com/", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "Passaigc", brief: "Passaigc专注于降低论文的AI生成内容（AIGC）检测率。", functions: "支持降重降AI率，没有具体价格标准", url: "https://www.passaigc.com/#/papercheck/check", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "PaperFake", brief: "PaperFake是一个智能降重与降AIGC平台，支持多种论文类型。", functions: "1.费用\n①降重降AI率：3元/千字\n②重复率AI率超必退", url: "https://paperfake.cn/aigc/?q=yanweb", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "CheckVip", brief: "CheckVip是一站式学术服务平台，提供论文查重、降重、降AIGC、格式检查等服务。", functions: "1.费用\n①降重：5元/千字，支持中英文\n②降AI率：5元/千字，只限中文\n③双擎降重：8元/千字，只限中文", url: "https://www.checkvip.net/", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "xuxuai", brief: "xuxuai是一款AI写作与降重工具，支持论文、文案等多种场景。", functions: "1.费用\n①强力降重：4.5元/千字\n②GPT-4：5元/千字\n③超级降重：8元/千字\n④降AI率：3.5元/千字", url: "https://www.xuxuai.net/#/checkvip", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "查查呗", brief: "查查呗（PaperCCB）是一个学术查重与降重平台，提供查重报告解析、智能降重、人工降重等服务。", functions: "1.费用\n①强力降重：4.5元/千字\n②超级降重：8元/千字\n③超级降AI率：3.5元/千字\n④智能降AI率：3元/千字", url: "https://www.paperccb.com/", tags: "查重查AI率,降重降AI率" },
+{ category: "论文降重降AI率", name: "PaperPro", brief: "PaperPro是一款专业的论文降重与润色工具，采用深度学习模型。", functions: "1.费用\n①普通版：5元/千字\n②融合版：8元/千字\n③可免费体验一次降AI率", url: "https://www.paperpro.cn/", tags: "查重查AI率,降重降AI率" },
+// ===================== 数据查找 =====================
+{ category: "数据查找", name: "国家数据", brief: "国家统计局官方数据平台，中国最权威的宏观经济与社会统计数据发布门户。", functions: "1.数据查询\n①全领域数据查询：可查找国民经济核算、人口与就业、价格指数、居民收入、工业、农业、建筑业、交通运输、批发零售、对外贸易、财政金融、能源、环境、教育、科技、卫生、社会服务、文化、资源环境等 20 余个主题的统计指标\n②多维度数据获取：支持按地区（全国/省/地级市/县）、时间（月度/季度/年度）、行业（国民经济行业分类）进行数据筛选和对比\n③数据导出：数据表格可导出为 Excel、CSV、PDF 等格式，支持生成折线图、柱状图、地图等可视化图表\n2.统计成果库\n①统计年鉴：提供《中国统计年鉴》《中国统计摘要》及各省市统计年鉴，支持整本或摘录在线浏览、下载\n②普查数据：可查阅人口普查、经济普查、农业普查等大型普查的汇总数据和微观数据（部分需申请）\n③统计公报：发布年度国民经济和社会发展统计公报、统计月报等\n3.数据解读与帮助\n①指标解释：提供统计指标的定义、计算方法、统计口径说明\n②数据解读：发布统计专家对热点数据的分析解读文章\n③国际接轨：数据分类遵循联合国、IMF等国际标准，便于国际比较", url: "https://data.stats.gov.cn/dg/website/page.html#/pc/national/home", tags: "数据库,宏观数据" },
+{ category: "数据查找", name: "国家法律法规数据库", brief: "中国最权威、最全面、唯一由立法机关直接维护的法律法规公开检索系统。", functions: "1.数据查询\n①可查找中华人民共和国现行有效的宪法（含修正案）、法律、行政法规、监察法规、地方性法规、自治条例和单行条例、经济特区法规、浦东新区法规、海南自由贸易港法规、司法解释电子文本\n②数据持续更新，新法速递栏目可查看最新上线法规\n2.法规检索\n①支持在搜索区输入关键词进行快速检索\n②通过高级检索可按标题/正文、颁布日期/施行日期、制定机关、法律效力阶位、时效性等条件精确筛选\n③首页按宪法、法律、行政法规、地方法规、司法解释等版块分类展示，可点击更多跳转查看完整数据列表", url: "https://flk.npc.gov.cn/index", tags: "数据库,法律数据" },
+{ category: "数据查找", name: "中国互联网络发展数据", brief: "CNNIC官方数据发布平台，定期发布《中国互联网络发展状况统计报告》。", functions: "1.数据查询\n①可查找网民规模、互联网普及率、非网民规模及不上网原因等核心网民数据\n②可查找IPv4/IPv6地址数量、域名总数（含.CN域名数量）、网站数量、国际出口带宽、移动电话基站数量、光缆线路长度等互联网基础资源数据\n③可查找网络购物、网络支付、网络视频、网络直播、即时通信、网络新闻等各类互联网应用使用规模和使用率数据\n④可查找农村网民、银发族网民、青少年网民等细分人群的网民结构特征数据\n⑤可查找生成式人工智能用户规模、使用场景等新兴领域应用数据\n2.报告浏览与下载\n①提供历次《中国互联网络发展状况统计报告》全文下载\n②提供《数字消费发展报告》《生成式人工智能应用发展报告》《互联网助力数字消费发展蓝皮书》《从互联网大数据看中小企业发展》等专题研究报告下载\n③提供青少年上网行为报告、互联网大事记等其他相关资料", url: "https://cnnic.cn/6/86/88/index.html", tags: "数据库,互联网数据" },
+{ category: "数据查找", name: "习近平系列重要讲话数据库", brief: "人民网·中国共产党新闻网打造，收录十八大以来习近平总书记系列重要讲话原文及相关论述。", functions: "1.数据查询\n①可查找十八大以来习近平总书记的系列重要讲话原文、相关重要论述、活动、会议、批示、书信、致辞、音视频等六大类文献\n②可查找涵盖经济、政治、文化、社会、生态、党建、国防、外交等各个领域的重要讲话内容\n③可查找最新讲话、国内讲话与国际讲话分类内容\n④可聆听习近平总书记在不同场合讲话、致辞、演讲的音频\n2.检索功能\n①支持按标题关键词或内容关键词精准查找讲话原文\n②支持按讲话发表的时间段进行搜索（可单独按时间搜索，也可按关键词+时间段组合搜索）\n③支持按经济、政治、文化、社会、生态、党建、国防、外交等八大类别进行筛选搜索\n④最新讲话栏目自动展示最新发表的讲话原文列表，支持国内/国际切换\n⑤学习关键词栏目汇集近期热门搜索关键词供一键检索", url: "https://jhsjk.people.cn/", tags: "数据库" },
+{ category: "数据查找", name: "CnOpenData", brief: "覆盖经济、金融、会计、法律、地理、新闻、医疗、体育等多学科的综合型数据平台。", functions: "1.数据查询\n①可查找全球专利及引用被引用数据（1.5亿+量级）、工商注册企业数据（3.5亿+量级）、线上招聘广告数据（3.6亿+量级）、招投标数据（5800万+量级）\n②可查找各种上市公司另类数据、房地产与土地数据、裁判文书数据、税收调查数据、全量省份报纸数据、财经文本数据、生态环境数据、分地区数据、地理交通数据、气象数据\n③可查找雪球数据、股吧数据、Glassdoor美国公司员工评价数据、Twitter数据、Linkedin员工简历数据、美国公司招聘数据等社交媒体数据\n④可查找政府数据、新冠疫情数据、文本语料数据、教育教学数据等\n⑤涵盖数值型数据和文本型数据，满足经济、金融、法律、医疗、人文等多学科、多层次研究需求\n2.辅助信息\n①提供中国社会科学研究数据库平台（SSRData），现拥有10余个专题数据模块、140+个数据库，服务于高校机构客户\n②与普林斯顿图书馆、Neudata、福建大数据交易所等国内外机构达成战略合作关系\n③持续吸收大语言模型、深度学习、图像识别等前沿数字技术，将数据产品升级为智能解决方案", url: "https://www.cnopendata.com/", tags: "数据库" },
+{ category: "数据查找", name: "搜数", brief: "大型统计年鉴资料数据总库，完整收录建国以来各类权威统计资料。", functions: "1.数据查询\n①可查找国民经济核算、固定资产投资、人口与人力资源、人民生活与物价、各类企事业单位、财政金融、自然资源、能源与环境、政法与公共管理、农民农业和农村、工业、贸易外经等各行业统计表格数据\n②可查找国家、省、市及县级统计年鉴和月报\n③可查找海关统计月报、中国人民银行统计季报、经济普查资料、抽样调查资料、白皮书、发展报告等多种类型统计资料\n④提供统计词典功能，辅助理解统计指标含义\n2.检索与获取\n①支持全文检索和路径索引两种检索方式，可通过关键词查找目标统计信息\n②提供专业检索功能，可对检索结果进行逻辑组合筛选\n③支持按年鉴名称、出版时间、所在地、分类属性等条件查询年鉴出版信息及全部表格内容\n④检索到的统计表格均可下载为Excel格式，便于二次分析处理\n3.数字化标引与统计分析\n①核心价值：将分散在统计年鉴、调查报告、公报、白皮书中的表格数据进行数字化、标引和检索优化，实现跨表、跨年份、跨来源的统一查询\n②提供统计数据图形展示功能，辅助数据挖掘分析\n③大陆统计数据库与港台统计数据库分区展示，便于针对性查询\n④平台每日更新数据，每日新增数据量可达50万个，保证数据时效性", url: "http://www.soshoo.com/index.do", tags: "数据库" },
+{ category: "数据查找", name: "知网统计数据", brief: "中国知网旗下统计数据平台，整合宏观、行业、区域统计数据，与学术文献交叉关联。", functions: "1.数据查询\n①宏观经济：可查找国内生产总值(GDP)、居民消费价格指数(CPI)、固定资产投资、财政收支、货币供应量等涵盖国民经济核算、财政金融等领域的经济指标\n②区域发展：按全国、省、市、县查询各地区经济总量、人口结构、产业发展等区域经济数据\n③行业动态：提供工业、农业、建筑业、交通运输、批发零售、能源、教育、科技、卫生等32个行业的增加值、产量、效益等数据\n④国际数据：收录世界银行、联合国教科文组织、OECD及各行业国际组织发布的数据近2亿笔\n⑤进度数据：收录国家统计局实时发布的宏观/区域进度指标5万余个、行业进度指标65982个，含月度、季度数据，弥补统计年鉴滞后性\n⑥进出口贸易：收录海关进出口贸易统计数据1.9亿笔，包括贸易信息、产品信息和航运信息等\n⑦指标抽取：通过指标抽取工具将统计年鉴、统计公报等文本中的年度指标进行抽取，截至当前已积累年度数据3.6亿笔\n2.统计年鉴库\n①收录我国历年出版的统计年鉴（资料）共约33922册，其中包括统计年鉴30786册、普查资料1167册、分析报告781册等\n②中央级统计年鉴收录卷册完整率达99.3%，收录刊数完整率高于99%\n③包含中国统计年鉴、中国统计摘要、中国人口/经济/农业普查资料，以及中国工业/农村/能源/科技/教育/卫生等千余种统计年鉴\n④我国仍在连续出版的193种统计年鉴全部收录\n⑤所有统计图表均加工为Excel格式，支持整本浏览、摘录及指标数值检索\n3.数据分析与可视化\n①支持按时间-地区-指标的多维度组配分析，可生成自定义衍生指标\n②提供决策支持分析算法，包括相关性分析、统计预测、科学评价及决策模型分析\n③统计地理信息系统(GIS)将数据与地图结合，实现省/市/县数据的图形地图展示、多指标叠加分析、时态数据分析、专题地域图制作等\n④在线生成统计报表及多样化的可视化图表（柱状图、折线图、饼图等）\n⑤支持个人数据管理，用户可创建自有统计数据库，并将自有数据与平台统计指标数据合并分析\n⑥平台基于数据挖掘分析技术IDMETM，提供一站式数据分析服务\n4.AI智能服务\n①智能问答：通过自然语言提问，迅速从9亿+权威统计数据中获取可追溯来源的统计结果\n②智能分析：以问答方式融合数据运算与统计分析模型，自动生成包括可视化图表、趋势预测等在内的数据分析结果\n③智能解读：对统计指标数据及其分析结果进行全面、清晰和准确的解读，揭示数据内在含义\n④智能报告：利用自然语言处理技术和AI大模型，自动生成结构清晰、内容详实的数据分析报告\n⑤核心价值：基于知网自主调试开发的“统计数据大模型”，实现“查数据”与“用数据”的智能化与自动化", url: "https://data.cnki.net/", tags: "数据库" },
+{ category: "数据查找", name: "东方财富数据中心", brief: "东方财富网旗下金融数据平台，提供股票、基金、债券、宏观经济等数据。", functions: "1.数据查询\n①可查找股票数据：A股/港股/美股实时行情、历史日线/周线/月线K线数据、市盈率、市净率、总市值、换手率等\n②可查找基金数据：基金净值走势、基金排名、持仓明细、基金经理变动、基金定投收益测算\n③可查找债券数据：国债/企业债/可转债的收益率、到期收益率、久期等指标\n④可查找指数数据：上证指数、深证成指、创业板指、科创50等主要股指实时行情\n⑤可查找上市公司财务数据：营业收入、归母净利润、净资产收益率、毛利率等财务指标\n⑥支持数据导出为Excel格式，进行二次分析\n2.特色数据\n①资金流向：查询个股/板块的主力净流入、超大单/大单净流入、中单/小单净流向，分类展示资金情绪\n②板块资金：按行业板块、概念板块、地域板块三大类展示资金流向排行，支持近期趋势对比\n③沪深港通资金：监控北向资金与南向资金的实时流向、持续增持/减持个股列表\n④财报与公告：提供上市公司年报/季报的业绩报表、业绩快报、业绩预告及预约披露时间\n⑤龙虎榜数据：展示每日涨跌幅/换手率异常个股的买卖详情，标注上榜营业部性质、买卖金额及游资机构动向\n⑥财经日历：按照时间序列排列中美欧等国的重要宏观经济数据发布时间表和政策事件安排，支持提前订阅及事件解读\n⑦专题数据：新股申购日历、中签号公布、公募/私募基金排名、宏观数据（CPI、PPI、PMI、GDP、M2等）、沪深港通席位及机构调研详情\n⑧股票筛选器：支持按市盈率、市净率、股息率、营收增速、地区、行业等多种条件交叉筛选A股，定位符合条件的持仓标的", url: "https://data.eastmoney.com/center/", tags: "数据库,金融数据" },
+{ category: "数据查找", name: "前瞻数据库", brief: "前瞻产业研究院旗下大型产业经济数据平台，拥有100万数据指标。", functions: "1.数据查询\n①宏观经济：可查询国内生产总值（GDP）、居民消费价格指数（CPI）、固定资产投资、财政收支、货币供应量等涵盖国民经济核算、财政金融等领域的经济指标，以及进出口数据（含贸易信息、产品信息、航运信息等）\n②区域经济：按全国、省、市、县查询各地区的经济总量、产业结构、固定资产投资、消费、财政收支等经济指标\n③行业经济：提供6600余个细分行业的经济数据，涵盖工业、农业、建筑业、交通运输、批发零售、能源、教育、科技、卫生、电力、钢铁、煤炭、化工、医药、汽车、互联网、电子信息、金融、房地产等多个领域，数据类型包含产值、产量、销量、价格、成本费用、利润、库存等\n④产品数据：提供各类产品的市场价格、出厂价格、销量、进出口情况等产品级微观数据\n⑤企业数据及上市数据：涵盖全球上市企业财务数据、中国工商企业注册信息、企业招投标信息、企业信用信息等\n⑥国际宏观数据：覆盖全球主要国家的宏观经济指标、国际贸易数据、产业发展数据，支持多国横向对比\n⑦海外数据库与专题数据：提供一带一路沿线国家经贸数据，以及全国经济普查数据、抽样调查数据、行业白皮书、发展报告等专题资料\n⑧每日每账户最高可访问500个指标的详细数据\n2.数据获取与处理\n①数据检索：支持关键词检索，可对宏观经济、区域经济、行业数据、企业数据等进行一站式跨库检索\n②数据导出：所有数据表格支持下载为Excel格式，便于二次分析处理\n③可视化分析：使用前端矢量绘图实现灵活高清跨平台，在线生成图表、柱状图、折线图、饼图等可视化图表\n④智能分析：基于大数据技术和算法模型，搭载产业运行分析、短板诊断、对标对比、精准招商、产业监测等功能", url: "https://d.qianzhan.com/", tags: "数据库" },
+{ category: "数据查找", name: "中科院科学数据中心", brief: "中国科学院科学数据资源一体化服务统一入口，推动科学数据开放共享。", functions: "1.数据查询\n①可查找覆盖地球科学、生物学、物理学、化学、材料科学、计算机科学技术、环境科学、农业、医学等数十个学科领域的科学数据集\n②可统一检索国家高能物理、微生物、基因组、冰川冻土沙漠、生态、青藏高原、天文、空间科学、地球系统等18个学科中心和13个所级中心的汇交数据\n③可通过findata搜索引擎集成ScienceDB、gscloud、Zenodo、GBIF等3700多万个国内外开放数据集\n④可查找中国科学院自主研制的“磐石”系列科学大模型（粒子物理、数学、材料、天文、地理等）以及项目汇交数据、论文关联数据等\n2.数据分析与工具\n①提供科学数据中心软件栈（数据汇聚、管理、发现、分析）\n②集成科技文献智慧数据中心，关联1.58亿篇论文、9500万篇专利等学术资源，实现科学数据与文献交叉检索\n③提供ScienceDB科学数据银行，支持科研人员发布、存储和共享数据，实现数据可引用\n3.AI智能服务\n①ScienceDB AI：基于大语言模型的科学数据推荐智能体，支持自然语言数据问答\n②“磐石”科学基础大模型体系：面向多学科提供AI驱动的数据分析与科研创新支持", url: "https://www.casdc.cn/home", tags: "数据库" },
+{ category: "数据查找", name: "国家农业科学数据中心", brief: "国家级农业科学数据中心，围绕12大学科领域推动农业科学数据开放共享。", functions: "1.数据查询\n①可查找作物科学（种质、育种、栽培、分子）、动物科学（种质、育种、饲养、兽医）、渔业科学、热作科学、草业科学、农业资源与环境（土、肥、水、气、生态、遥感）、植物保护、食品营养与加工、农业装备与信息、农业农村经济等12大学科领域的科学数据\n②可查找气候变化对作物影响、土壤质量监测、农业生物多样性、动物疫情预测、作物表型与环境型等环境、生物、经济领域数据\n③支持按学科分类导航浏览，按数据集名称、作者单位、关键词、CSTR等字段检索\n2.专题与精品数据库\n①精品库：农业科技机构、人才、成果等精品数据库\n②专题数据库：已建成17个专题库，包括家畜（猪/羊/牛）专题、家禽（鸡）专题、作物育种专题、黄河流域专题、果树专题、小麦专题等\n③特色库：热带农业国际合作、木薯产业、一带一路热带国家农业资源等6个特色数据库", url: "https://www.agridata.cn/#/home", tags: "数据库,农业数据" },
+{ category: "数据查找", name: "国家高能物理科学数据中心", brief: "高能物理领域国家级科学数据中心，提供大科学装置实验与模拟数据。", functions: "1.数据查询与获取\n①高能物理实验数据：可查找北京正负电子对撞机与北京谱仪（BESIII）、江门中微子实验（JUNO）、高海拔宇宙线观测站（LHAASO）、大型强子对撞机（LHC）等多个大科学装置的实验与模拟数据\n②中子科学数据：可查找中国散裂中子源等装置产生的中子科学相关数据\n③光子科学数据：可查找高能同步辐射光源（HEPS）等装置的同步辐射实验数据\n④天体物理数据：可查找引力波暴高能电磁对应体全天监测器（GECAM）等卫星的项目数据\n⑤多学科交叉数据：面向材料科学、生物科学、环境科学等多个学科提供数据服务", url: "https://www.nhepsdc.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家微生物科学数据中心", brief: "全球微生物领域最重要的数据中心，接收全球46个国家数据汇交。", functions: "1.数据查询\n①可查找微生物菌种资源（全球50多万菌株信息）、基因组学数据（核酸、原始组学、基因组数据）、宏基因组数据（6万+样本、50万+MAGs）、病原微生物与病毒数据、菌物分类数据以及蛋白质数据等\n②支持按数据库分类导航浏览，通过关键词、菌株编号、物种名等检索\n2.数据汇交与管理\n①面向科研论文提供数据存储与共享服务，支持菌株、核酸序列、基因组、宏基因组、蛋白质结构等类型数据提交，审核后发放编号及DOI\n②承担国家重点研发计划等科技计划项目的数据汇交，已汇交数据总量55TB、数据集1万个\n3.数据标准化与AI分析\n①牵头制定微生物领域国家标准及国际ISO数据标准，开发自主知识产权数据管理平台\n②支持宏基因组数据物种/功能注释、智能化数据分析及实验流程智能设计", url: "https://nmdc.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家天文科学数据中心", brief: "国家天文科学数据中心，提供LAMOST、FAST等核心设备观测数据。", functions: "1.数据查询\n①可查找LAMOST光谱数据（总光谱数超3000万条）、FAST射电数据、兴隆2.16米望远镜、丽江2.4米望远镜、抚仙湖太阳望远镜等国内核心设备观测数据，以及历史观测底片数字化数据、数值模拟数据、论文关联数据\n②支持按观测波段、观测装置、数据类型等分类浏览，按坐标和天体标识符检索，输出格式支持HTML、VOTable、CSV、FITS\n2.望远镜服务\n①为LAMOST、FAST等重大科技设施提供原始数据传输、归档、备份及产品数据发布、在线分析等全方位服务\n②为国内核心天文设备提供统一的时间申请、数据管理、共享服务\n3.AI与大模型\n①AstroOne天一大模型：700亿参数，天文知识能力最强的大语言模型\n②金乌大模型（太阳物理）、SpecCLIP光谱大模型、FALCO时域光变大模型\n③提供LAMOST专属Python工具包pylamost", url: "https://nadc.china-vo.org/", tags: "数据库,天文数据" },
+{ category: "数据查找", name: "国家气象科学数据中心", brief: "中国气象数据网，国家气象信息中心面向全球开放气象数据。", functions: "1.数据查询\n①可查找地面气象观测资料（气温、降水、风、能见度等）、高空探测资料、海洋气象资料（海浪、海温等）、雷达探测数据、卫星遥感产品（风云卫星云图等）、数值模式预报产品、农情监测实况、全球气候统计产品等12类106种气象数据\n②支持注册用户按台站、时间范围、经纬度、空间范围等条件检索，提供FTP和SDK编程接口批量下载\n2.特色服务\n①提供人工智能气象大模型训练专题数据、发动机适航审定、风电能源、森林防火、防灾减灾等18个专题数据产品\n②推出32套高精度气象实况数据产品及关键气候要素长序列基础数据产品", url: "https://data.cma.cn/", tags: "数据库,气象数据" },
+{ category: "数据查找", name: "国家海洋科学数据中心", brief: "国家级海洋科学数据中心，整合海洋水文、气象、生物、化学等9大学科实测数据。", functions: "1.数据查询\n①可查找海洋水文数据（温度、盐度、海流、潮汐）、海洋气象数据（海面风场、气压、能见度）、海洋化学与生态数据（营养盐、叶绿素、赤潮）、海洋生物与渔业数据、海底地形与地球物理数据，以及极地考察、大洋科考、卫星遥感等多源数据\n②海洋站准实时数据（1999年5月以来14个海洋站的气象、波浪、温盐等）、波浪和风场延时数据（1996年1月以来）、全球海平面观测数据（2016年至今）、船舶观测数据（1999年5月至2003年9月）、水位综合数据集（1846—2022年全球海域逐时水位）等\n③支持条件查询、关键字检索、时空范围检索，提供数据在线预览、统计分析、数据收藏和订阅功能，以及基于地图服务的数据可视化\n2.专题信息产品\n①海洋环境统计分析产品、实况分析和再分析产品，以及海洋经济、海域海岛、海洋灾害等专题产品、图集图件\n②海底地形命名查询（中国、国际、美国、日本）、海洋经济产品（中国海洋经济图集、年鉴、公报、指数）、海域海岛产品（中国四大海域和南海重点岛礁）、潮汐潮流预报（沿海港口、岛屿和海区的每日预报）、海洋灾害产品（中国海平面公报、热带气旋和风暴潮统计分析）", url: "https://mds.nmdis.org.cn/", tags: "数据库,海洋数据" },
+{ category: "数据查找", name: "国家极地科学数据中心", brief: "国家级极地科学数据中心，负责极地领域科学数据统一管理和长期保存。", functions: "1.数据查询\n①可查找极地海洋学、冰川学、生物与生态学、地质与地球物理学、大气科学、空间物理、遥感以及极地环境污染（微塑料、核素等）等领域的观测数据，以及我国历次南北极科学考察的航次数据和样品分析数据\n②支持按数据年份、考察队/航次等条件检索，提供在线预览及部分数据直接下载\n2.数据汇交与管理\n①承担国家重点研发计划、极地科学考察专项等项目数据汇交，负责极地领域科学数据的统一管理和长期保存", url: "https://datacenter.chinare.org.cn/data-center/dindex", tags: "数据库,极地数据" },
+{ category: "数据查找", name: "国家生态科学数据中心", brief: "国家生态系统观测研究网络，提供长期生态监测数据。", functions: "1.数据查询\n①可查找生态系统长期联网定位监测数据（水分、土壤、大气、生物等4个学科大类约300个监测项目的数据，已积累近30年）、中国碳氮水通量观测数据、生态遥感数据、生态站野外科技设施与样品资源、空间栅格气象数据、模型模拟数据、科学实验数据、野外调查数据、期刊论文关联数据、科技计划项目数据、科研团队数据等\n②可查找生态系统重要服务功能专题评估数据产品，包括生产力与固碳、生物多样性、水源涵养、土壤保持、防风固沙等多个层级的标准化数据产品\n③支持按主题、标签、内容及关联关系的数据发现模式，提供在线数据预览、批量下载及基于GIS地图服务的可视化展示\n2.生态数据分析与挖掘\n①基于生态网络云（Eco‑Cloud）平台，提供跨站点联网分析、模型模拟、数据同化等深度数据挖掘功能，支撑长期生态监测数据的多源融合与综合分析\n②提供生态站监测数据产品生产系统（EcoFlow），实现生态系统关键要素长期观测数据的自动化质量控制和统计分析，支持多层级标准化数据产品的加工生产以及一键汇交发布\n③可视化分析系统与全国野外站综合信息管理系统互联，以增强现实、实时视频等方式在线展示全国野外站监测设施资源分布及实时监测活动", url: "https://www.nesdc.org.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家计量科学数据中心", brief: "国家级计量科学数据中心，提供计量参考数据、国家标准物质等信息。", functions: "1.数据查询\n①可查找计量参考数据（4.29TB结构化数据，含5298个数据集）、计量科研数据、计量基标准数据及计量检测数据（通过检定、校准等方式获得的权威计量器具数据）\n②可查找国家标准物质（涵盖13个领域6000余种国家有证标准物质）及获得国际互认的国家校准测量能力数据（截至2025年11月已达2010项）\n③支持按主题分类导航（如时间频率传递、计量基础设施、计量服务产业、放疗计量、重力计量等）及计量技术资源（社会公用计量标准、计量技术法规、机构服务能力等）的一站式综合检索\n2.专题数据库\n①标准物质数据库：集成标准物质信息查询、实物共享推广与技术交流功能\n②社会公用计量标准数据集：收集整理自248家机构，涵盖15项数据类别的计量标准权威信息\n③校准测量能力数据库：收录获得国际互认的校准测量能力数据\n④计量技术法规数据库：提供国家计量技术规范、政策法规等标准文件的检索与查阅\n3.AI与数据挖掘\n①基于人工智能、机器学习、模式识别等技术对海量计量检测数据进行自动化分析挖掘\n②利用爬虫与深度学习技术开发计量信息智能推送系统，实现多维度主题地图构建与个性化订阅推送\n③以数据为中心推进计量科研智能化，聚焦数据的准确性、溯源性及量值统一，支撑数字经济时代的质量基础设施建设", url: "https://www.nmdc.ac.cn/main/#/pages/index", tags: "数据库" },
+{ category: "数据查找", name: "国家地震科学数据中心", brief: "国家级地震科学数据中心，提供测震、强震动、地磁等地震科学数据。", functions: "1.数据查询\n①可查找地震科学数据，包括地震观测类数据（测震、强震动、地磁、地电等）、地震探测类数据（地震测深、地球物理探测等）、地震调查数据（地震地质、活断层、灾害调查等）、地震专题数据（地震目录、震源机制、余震分布等）以及防震减灾综合数据\n②可查找“谛听”人工智能地震学训练数据集、青藏高原东北缘InSAR形变速率场、新疆/西藏地区基于三维速度模型的地震重新定位目录等特色专题数据\n③支持按数据类型、分区、关键词和时空范围进行多维度组合检索\n2.数据汇交与共享服务\n①承接国家各级科技计划项目科学数据的汇交任务，提供数据长期保存和管理服务\n②部分地震目录等基础数据集支持在线直接下载；其他数据需通过网站下单申请，按数据量和复杂度提供在线下载、邮件发送、硬盘邮寄和定向推送等方式交付\n③提供电话咨询、信息咨询以及根据用户需求线下定制专题数据产品等离线数据服务\n④网站具备用户管理、数据管理、元数据查询、数据可视化服务等功能，实现统一登录管理和一站式数据服务", url: "https://data.earthquake.cn/", tags: "数据库,地震数据" },
+{ category: "数据查找", name: "国家空间科学数据中心", brief: "空间科学领域唯一的国家级数据中心，提供空间物理、空间天文等数据。", functions: "1.数据查询\n①可查找空间科学领域的数据资源，包括空间物理、空间环境、空间天文、太阳物理、行星科学、空间探测及卫星载荷数据\n②可查找南极中山站极光光谱仪图像数据、云南天文台地面日冕仪绿线数据、EP卫星FXT载荷数据等特色数据集\n③支持按卫星任务、载荷类型、学科领域等多维度浏览，提供泛在的数据检索与应用服务\n2.数据汇交与管理\n①承担国家重大科研专项任务和长期野外台站观测产生的科学数据及学术论文关联数据资源的汇交任务\n②实施数据的分级存储，确保数据安全与长期可用\n③牵头或参与起草了国家标准20余项，从资源描述、操作活动、过程管理三个维度贯穿空间科学数据全生命周期\n3.AI与数据分析\n①构建开放研究服务平台，与一线科研团队合作开展空间科学大数据分析、挖掘和应用核心技术研发\n②开发数据应用软件工具，提升数据应用效益，营造科学数据创新应用生态系统", url: "https://www.nssdc.ac.cn/nssdc_zh/html/index.html", tags: "数据库" },
+{ category: "数据查找", name: "国家基因组科学数据中心", brief: "国家级基因组科学数据中心，提供多组学数据资源。", functions: "1.数据查询\n①可查找多组学数据，包括生物项目数据、生物样本数据、组学原始数据、基因组序列数据、基因组变异数据、非编码RNA数据、甲基化数据、单细胞数据、空间转录组数据等9大数据类型\n②可查找人类遗传资源和重要战略生物资源的多组学数据，支持一站式多组学数据检索\n③支持数据浏览、关键词检索和高级查询，所有数据资源免费向国内外用户开放\n2.AI与数据分析\n①提供严格质控的AI-ready数据，支持基因组注释和多组学数据关联\n②开发癌症剪接智能体（SpiceAgent），实现智能审编、问答与分析；构建ViralBERT核酸语言模型，优化病毒宏基因组分析\n③支持BLAST比对、基因组浏览器、数据可视化等在线分析工具", url: "https://ngdc.cncb.ac.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家地球系统科学数据中心", brief: "国内规模最大的地球系统科学数据库群，涵盖18个一级学科。", functions: "1.数据查询\n①可查找地球系统科学与全球变化领域数据，涵盖大气圈、水圈、冰冻圈、岩石圈、陆地表层、海洋以及外层空间等18个一级学科\n②包括大气科学、水文学、冰冻圈科学、地质学、地球物理学、海洋科学、陆地表面科学、自然资源、生态环境、遥感与地理信息系统等主题数据\n③可获取国家科技计划项目汇交数据、多源卫星遥感产品、长期定位观测数据、全球变化模拟数据等\n④支持按学科分类导航、关键词检索、时空范围检索，提供在线预览和数据下载\n2.数据挖掘与知识发现\n①支持科学数据挖掘分析和重组，通过整合多源数据并利用知识可视化服务技术，直观呈现复杂数据的分析结果\n②提供数据在线分析、模型计算和知识发现等增值服务", url: "https://www.geodata.cn/", tags: "数据库,青藏高原数据" },
+{ category: "数据查找", name: "国家青藏高原科学数据中心", brief: "针对青藏高原及周边地区最权威的科学数据中心。", functions: "1.数据查询\n①可查找冰冻圈数据（冰川、冻土、积雪）、固体地球数据（地质、地球物理）、古环境数据、陆地表层数据、人地关系数据、大气数据、遥感数据、日地空间物理与天文数据、海洋数据等青藏高原及周边地区的科学数据\n②可查找青藏高原大于0.01平方公里湖泊数据集（2020）、青藏高原500m日尺度表层土壤湿度数据集、青藏高原七大河流源区径流深数据集、中国1km分辨率逐月降水量数据集等明星数据产品\n③支持按数据目录导航、关键词检索、时空范围检索，提供中英文双语共享平台，3500多个数据集支持开放获取", url: "https://data.tpdc.ac.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家人口健康科学数据中心", brief: "国家级人口健康科学数据中心，整合基础医学、临床医学、公共卫生等领域数据。", functions: "1.数据查询\n①可查找基础医学、临床医学、公共卫生、药学、中医药学、人口与生殖健康等领域的人口健康科学数据\n②可查找行业顶级专业机构的工作数据、监测数据、研究数据以及国家科技计划课题产生的科学数据\n③涵盖疾病监测、卫生统计、临床病例、药物信息、医学术语、标准、报告、人才等科技资源\n④普通注册用户可在系统上在线浏览、查询和下载数据", url: "https://www.ncmi.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家林业和草原科学数据中心", brief: "国家级林业和草原科学数据中心，覆盖森林、草原、湿地等12大类数据。", functions: "1.数据查询\n①可查找12大类别的林草科学数据，包括森林资源数据（森林分布、蓄积量、树种组成）、草原资源数据（草地类型、产草量、载畜量）、湿地资源数据（湿地类型、面积）、荒漠资源数据、自然保护地资源数据等\n②可查找中国陆地生态系统定位观测研究站网数据、林草科学大数据、三北工程专题数据等\n③支持按数据目录浏览、关键词搜索等多种检索方式，提供在线浏览和数据下载服务", url: "https://www.forestdata.cn/", tags: "数据库" },
+{ category: "数据查找", name: "国家冰川冻土沙漠科学数据中心", brief: "国家级冰川冻土沙漠科学数据中心，提供寒区旱区科学数据。", functions: "1.数据查询\n①可查找冰川数据（冰川编目、冰川变化、物质平衡）、冻土数据（多年冻土分布、活动层厚度、地温）、沙漠数据（沙漠边界、沙丘移动）、积雪数据、黄土数据、雪冰灾害数据及其作用区域的科学数据\n②资源涵盖我国寒区旱区的3大高原（青藏、蒙新和黄土），3条跨境河流、4大内陆河流域、3大廊道、4大盆地、8大沙漠、4大沙地、11大盐湖以及重点线状工程等区域的野外观测、调查考察、模拟、多源遥感等10种数据来源\n③已集成4005条高质量数据集，支持多维度数据查询，可解析复杂检索指令（如“近十年黄河流域植被覆盖数据”），自动关联卫星遥感、地面观测等多源数据\n④支持按专题浏览（如湖北巴东地质灾害数据专题）、关键词检索和时空范围检索\n2.AI与数据分析\n①推出智能数据助理（NCDC数据助理），提供智能化数据问答和推荐服务\n②发布全球冰冻圈研究引擎（GCE），集成了9大核心功能模块，汇聚了卫星影像、观测数据、冰冻圈特色数据、AI数据集、模拟数据等约1.1PB数据资源", url: "https://www.ncdc.ac.cn/portal/", tags: "数据库" },
+{ category: "数据查找", name: "艾瑞网", brief: "国内首家新经济门户网站，提供互联网产业数据、报告、行业数据库。", functions: "1.数据查询\n①可查找电子商务、移动互联网、人工智能、医疗健康、网络游戏、网络广告、网络营销、媒体文娱等新经济领域的数据报告和行业数据库\n②可查阅网民行为研究数据（家庭办公用户等）、网络广告监测数据等，通过多种指标研究帮助行业建立评估标准\n③支持按行业、时间、指标等多维度定制化数据查询和分析\n2.行业服务\n①提供产业资讯、研究报告、行业数据库等综合信息服务，通过自主开发的各类数据库推动产业对互联网的量化认知\n②艾瑞指数板块提供APP活跃用户规模、行业渗透率等移动应用排名数据\n③研究报告支持在线预览和免费下载（官网上收费栏目无报告）", url: "https://www.iresearch.cn/mindex.shtml", tags: "数据库,金融数据" },
+{ category: "数据查找", name: "同花顺数据", brief: "同花顺旗下金融市场数据服务平台，涵盖股票、基金、债券、期货、宏观经济等。", functions: "1.数据查询\n①可查找A股/港股/美股行情数据、历史K线数据、市盈率、市净率、总市值、换手率等股票数据\n②可查找融资融券数据（融资余额、融券余量）、资金流向数据、大宗交易记录、限售解禁安排等特色交易数据\n③可查找上市公司财务数据（资产负债表、利润表、现金流量表）、业绩预告、业绩公告等\n④可查找龙虎榜数据（涨跌幅/换手率异常个股的买卖详情）、机构席位动向，以及宏观经济数据（GDP、CPI、PPI、PMI等）、产业数据、产品价格数据\n⑤数据支持表格导出为Excel格式，所有历史数据和机构专用数据公开发布\n2.辅助功能\n①提供财经日历、业绩预测、投资机会、涨停聚焦等交易提醒和投资机会数据\n②同花顺iFinD金融大数据终端面向机构投资者提供股票、基金、债券、期货、外汇等全品类金融数据，支持API调用、Excel插件\n③部分数据需免费注册账号后获取完整权限", url: "https://data.10jqka.com.cn/", tags: "数据库" },
+// ===================== 数据分析与可视化 =====================
+{ category: "数据分析与可视化", name: "SPSS", brief: "SPSS是全球应用最广泛的统计分析软件之一，由IBM开发，广泛应用于社会科学、市场研究、医疗健康等领域。", functions: "1.数据分析\n①可对数值型数据进行描述性统计（均值、标准差、频数分布等）、假设检验（t检验、卡方检验）、方差分析（ANOVA）、相关性检验、非参数检验以及回归分析（线性回归、逻辑回归）等统计分析\n②可对分类变量进行卡方检验，评估变量间的关联性\n③可对时间序列数据使用Hodrick-Prescott、Baxter-King、Christiano-Fitzgerald等过滤器分解趋势和周期成分，支持趋势、季节性、残差分析\n④可执行高级建模，包括决策树、神经网络、生存分析、聚类分析等机器学习方法\n2.数据管理\n①支持Excel、CSV、文本文件及数据库等多源数据导入，兼容各类主流数据格式\n②提供变量定义与标签、缺失值处理、数据转换与计算、个案筛选与拆分等数据预处理功能\n③内置数据编辑器，采用类电子表格界面，可直观查看和编辑原始数据\n3.可视化与服务\n①支持生成直方图、散点图、箱线图、条形图、饼图等多种统计图表\n②提供互动式散点图等高级可视化功能，支持图表编辑和美化\n③提供定制化相关性表等内置脚本工具，提升分析流程效率\n④提供Curated Assistance上下文感知统计指导功能，可智能解读统计结果并给出修改建议", url: "https://www.ibm.com/products/spss", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "Stata", brief: "Stata是一款功能完整的集成统计分析软件，广泛用于数据操作、统计分析、可视化及自动化报告。", functions: "1.数据查询与分析\n①可对各种类型数据进行数据管理、清洗、转换、合并等操作\n②可执行描述性统计、t检验、方差分析、回归分析（含工具变量回归）、面板数据分析、生存分析、时间序列分析等统计模型\n③支持高级计量方法，包括异质性双重差分、中介效应、多向聚类标准误、野聚类自助法、工具变量分位数回归、贝叶斯模型平均等现代因果推断与计量建模方法\n④支持机器学习方法、结构方程模型等更复杂的数据建模\n⑤19版本进一步引入机器学习和面板数据分析的新功能\n2.可视化\n①支持绘制散点图、折线图、箱线图、核密度图等多种专业统计图形\n②通过图形编辑器可实现图形的精细调整和自定义\n③所有图形均以高分辨率输出，符合专业出版标准\n④统计图形设计精美，满足学术论文和报告的专业化诉求", url: "https://www.stata.com/", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "FineBI", brief: "FineBI是帆软软件推出的自助式BI数据分析平台，支持指标管理、自助分析、报表查询。", functions: "1.数据查询\n①支持Excel、CSV、数据库、数据仓库、云端数据等多种数据源的接入\n②提供数据准备功能：新建业务包、新建数据表、进行基础表处理操作（如关联、合并、行列转换等）\n③支持构建SPL、视图等复杂的数据模型，处理多表关联和复杂业务逻辑\n④核心支持一站式指标创建、管理、检索、申请审批和分析，通过“语义层”实现全局搜索+自由过滤快速定位所需数据\n2.数据可视化\n①提供折线图、柱状图、饼图、散点图、地图、仪表盘、漏斗图等数十种可视化组件，满足用户各种可视化需求\n②通过拖拽式操作，用户几秒内即可完成图表创建和调整\n③提供丰富的经营分析场景模板（如月度经营分析、应收账款分析、客户毛利分析等），可直接套用\n④支持实时数据自动更新，帮助用户及时了解数据变化趋势\n3.智能分析\n①对话式BI分析：支持自然语言问答取数和智能分析，支持对话结果一键生成仪表板\n②支持时序预测、聚类分析、趋势分析等内嵌算法\n③提供异常检测、明细下钻、归因分析等智能数据解读能力", url: "https://sem.fanruan.com/sem/finebi?utm_source=ad&utm_medium=sgtg&utm_campaign=bi-sqljp&utm_term=D74637&msclkid=9e94df274efc15871e8fb6ce8f1c1729", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "Tableau", brief: "Tableau是一款由斯坦福大学技术驱动的数据可视化分析软件，通过拖放式界面生成图表与仪表盘。", functions: "1.数据查询与接入\n①支持Excel、CSV、SQL数据库、云数据库（AWS、Azure等）、API接口等几十种数据源的无缝连接\n②支持跨数据库数据整合和实时数据连接\n③支持几十种数据源的无缝集成，支持多表关联和自定义SQL\n2.可视化分析\n①拖拽式操作，无需编程即可创建复杂的交互式图表和仪表盘\n②支持柱状图、折线图、饼图、散点图、地图、热力图、树状图、盒须图、甘特图等多种图表类型\n③高级分析功能：支持数据钻取、筛选、排序、计算字段、表计算、聚类分析、趋势线、预测等\n④提供自定义视图、布局、形状、颜色等个性化设置能力\n⑤支持地图可视化与地理坐标数据分析", url: "https://www.tableau.com/zh-cn", tags: "数据可视化" },
+{ category: "数据分析与可视化", name: "Python", brief: "Python是一种通用编程语言，通过NumPy、pandas、Matplotlib等库成为数据科学领域最重要的工具之一。", functions: "1.数值计算（NumPy）\n①提供高效的多维数组对象（ndarray），支持大规模数据存储和运算\n②提供数学函数、线性代数、随机数生成、傅里叶变换等数值计算功能\n③数组运算速度接近C语言级别，是pandas、Matplotlib等高级库的底层依赖\n2.数据处理（pandas）\n①提供DataFrame和Series数据结构，便于处理结构化表格数据\n②支持数据清洗（缺失值处理、重复值删除）、数据转换、数据合并与连接、分组聚合等操作\n③支持多格式数据读写：CSV、Excel、SQL、JSON、Parquet等\n④时间序列处理能力强大，支持重采样、滑动窗口等操作\n3.数据可视化（Matplotlib、Seaborn等）\n①Matplotlib提供底层绘图API，支持折线图、散点图、柱状图、饼图、等高线图、3D图等各种图表类型\n②Seaborn基于Matplotlib封装，提供更美观的统计图形和高级绘图接口\n③Plotly、Bokeh等库支持交互式网页可视化\n④自定义能力强，满足学术出版级图表质量要求", url: "https://www.python.org/", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "SAS", brief: "SAS是全球领先的统计分析系统，由数十个专用模块构成，功能涵盖数据管理、分析、报告等。", functions: "1.数据管理与处理（SAS Base）\n①支持多源数据导入导出（Excel、CSV、数据库等）和跨平台数据访问\n②提供强大的数据清洗、数据转换、数据集合并、排序、筛选等功能\n③支持SQL过程进行数据库查询和操作\n④支持大数据集的批量处理和哈希表等内存处理技术\n2.统计分析\n①提供描述性统计、假设检验（t检验、卡方检验等）、方差分析、相关性分析、回归分析（线性、逻辑、非线性、广义线性）等基础统计功能\n②支持生存分析、时间序列分析（ARIMA、指数平滑等）、多变量分析（主成分分析、因子分析、聚类分析、判别分析）\n③支持运筹学方法（线性规划、整数规划）和计量经济学模型（面板数据等）\n④SAS Viya添加了贝叶斯网络、因子分解机、随机森林、梯度提升、神经网络、支持向量机等机器学习算法\n⑤支持数据分段、监督/无监督变量转换、分层建模、离群值检测、交互式特征生成、后模型可视化等预测建模任务\n3.可视化与报告\n①SAS Visual Statistics和SAS Visual Analytics提供可视化建模和分析环境\n②支持散点图、直方图、箱线图、等高线图、热力图、饼图等图形输出\n③可生成PDF、HTML、RTF等多种格式的专业报告\n④提供报表设计和交互式仪表盘制作功能", url: "https://www.sas.com/en_hk/home.html", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "R语言", brief: "R语言是一种专为统计计算和图形绘制设计的编程语言，广泛应用于数据科学和学术研究。", functions: "1.数据操作与处理\n①支持多种数据格式导入导出，包括CSV、Excel、SPSS、SAS、Stata、SQL数据库等\n②dplyr包提供数据清洗与整理：select（选取列）、filter（筛选行）、arrange（排序）、mutate（创建新列）、summarise（汇总）等函数\n③tidyr包支持数据重塑，包含数据透视、长宽格式转换等\n④data.table包提供高性能的大数据处理能力，适合百万级以上数据集\n⑤tidyverse是一套统一数据处理哲学的核心包集合，大幅简化数据工作流\n2.统计分析与建模\n①内置描述性统计、t检验、方差分析、线性回归、广义线性模型等基础统计方法\n②丰富的专业统计包覆盖时间序列分析（forecast）、生存分析（survival）、混合效应模型（lme4）、空间统计学（sp）等专门领域\n③机器学习：随机森林（randomForest）、支持向量机（e1071）、梯度提升（gbm、xgboost）、神经网络（nnet、keras）、聚类分析\n④R是统计建模新方法的首选发布平台之一，许多前沿统计方法最早以R包形式出现\n3.数据可视化\n①ggplot2提供基于图形语法的声明式绘图系统，通过图层叠加创建从简单到高度定制化的专业级图表\n②基础绘图系统支持快速绘制散点图、直方图、箱线图等常规统计图形\n③plotly、shiny支持创建交互式图表和Web应用，方便动态数据探索和仪表盘制作\n④可视化输出质量高，能够满足顶级学术期刊对图表风格的严格要求", url: "https://www.r-project.org/", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "Origin", brief: "Origin是科学与工程领域数据分析和绘图方面的领导软件，广泛应用于科技论文出版。", functions: "1.数据分析\n①支持描述性统计、假设检验、方差分析、相关性分析、非参数检验等基础统计分析\n②提供强大的曲线拟合功能，支持线性/非线性拟合、自定义拟合模型、批量拟合等\n③支持数据平滑、滤波、插值、积分/微分、峰值分析、基线校正等信号处理\n④支持正交试验设计与结果分析、方差分析等实验数据处理\n⑤具备数据溯源功能，可全程追踪图表生成所使用的原始数据与操作步骤，满足科研可重复性要求\n2.图形绘制\n①内置超过170种图形模板，覆盖2D和3D图形，包括散点图、线图、柱状图、箱线图、饼图、气泡图、瀑布图、极坐标图、等高线图、热图、向量图、3D曲面图、3D条状图等\n②可通过模板保存绘图设置，支持一键应用、批量化制图，批量处理成百上千个相似数据集\n③支持多轴图、多面板图，可组合多个图表形成复合图形\n④图形编辑器支持对象属性精细调整（颜色、符号、线型、字体、刻度等），满足期刊投稿的严格出版配图标准", url: "https://www.originlab.com/", tags: "数据分析,数据可视化" },
+{ category: "数据分析与可视化", name: "GraphPad", brief: "GraphPad Prism专注于生物医学和生命科学研究的数据分析与科学绘图，统计与绘图高度集成。", functions: "1.数据分析\n①提供与实验设计相匹配的统计模块：t检验、单因素/双因素/重复测量方差分析（含事后多重比较）、非参数检验、线性/非线性回归（含自定义方程）\n②内置生存分析（Kaplan-Meier曲线）、列联表、受试者工作特征曲线分析等生物研究常用统计方法\n③支持定量分析和分类数据分析，自动识别数据类型并推荐最佳分析方案\n④回归模块支持标准曲线拟合（用于ELISA、qPCR等实验室数据换算）和剂量-反应曲线模型（计算半数抑制浓度、EC50等药理学关键参数）\n⑤多变量数据模块提供类似电子表格的计算列和数据转换操作\n2.图形绘制\n①提供超过35种与统计方法协同的图形类型，包括散点图、柱状图（含个体值叠加）、箱线图、小提琴图、折线图、气泡图、生存曲线、热图等\n②基于原始数据自动生成误差条（标准差、均值的标准误、置信区间），并可在数据和统计结果视图间自由切换\n③提供丰富的图形自定义选项：配色方案、数据样式、标签字体等\n④支持图形布局功能，可在单张页面上排列多张相关图表，适用于论文多图版组合", url: "https://www.graphpad.com/", tags: "数据可视化" },
+{ category: "数据分析与可视化", name: "镝数图表", brief: "镝数图表是国内领先的零代码数据可视化平台，提供140多种图表模板。", functions: "1.零代码可视化编辑\n①无需编程，通过拖拽式操作和模板套用即可快速创建专业图表\n②提供140多种图表模板，涵盖柱状图、折线图、饼图、散点图、雷达图、漏斗图、极坐标图等13大类常用可视化类型\n③支持多场景图文模板（PPT、海报、信息长图、新媒体配图），满足数据新闻、商业报告、社交媒体营销等多种需求\n2.数据联动与呈现\n①上传Excel、CSV文件后自动识别数据并生成图表，支持实时数据更新\n②图表与数据源联动，数据修改后可视化结果同步自动更新\n③支持数值的排序、筛选、聚合运算等基础数据处理\n④可自由切换颜色、字体等样式配置\n⑤图表支持交互式功能（悬浮显示数值、图例筛选），并可导出为静态/交互式多种格式\n3.AI智能图表\n①AI Agent驱动：上传Excel或Word文件后，系统自动识别并快速生成可深度编辑的图表与数据报告\n②自动分析数据维度，智能推荐最适合的图表类型，一秒生成专业级别图表\n③自有算法和智能编辑器，支持图表、文本、图像等多元素灵活组合和精确编辑", url: "https://dycharts.com/", tags: "数据可视化" },
+{ category: "数据分析与可视化", name: "Qlik", brief: "Qlik是全球领先的数据集成与分析平台，提供Qlik Sense和QlikView等商业智能产品。", functions: "1.数据查询\n①支持100+种数据源接入：数据库（SQL Server、Oracle等）、数据仓库（Snowflake、Redshift等）、云应用（Salesforce、Google Analytics等）、本地文件（Excel、CSV、XML、JSON等）\n②通过直观的拖拽操作，跨库连接和整合多个异构数据源，无需编写SQL代码即可构建数据模型\n③提供元数据目录管理功能，可查看和理解组织中所有可用数据集的详细信息\n2.数据可视化与分析\n①提供丰富的可视化组件库（条形图、折线图、散点图、饼图、地图、热力图、盒须图等），支持多角度分析、向下钻取、数据分组等交互操作\n②支持自定义和可扩展的仪表板，提供多个预置图表模板和布局选项\n③支持高级分析，包括趋势线、聚类分析、预测、统计检验等\n④可视化组件之间自动联动，点击任一图表即可自动筛选关联图表，无需手动配置\n3.智能AI与增强分析\n①智能分析Agent集成问数、解读、报告三大核心能力，支持自然语言查询，快速生成可视化结果\n②Smart visual suggestions智能可视化推荐\n③可自动识别生产异常并完成根因归因，自动生成数据洞察与优化建议", url: "https://www.qlik.com/", tags: "数据分析" },
+{ category: "数据分析与可视化", name: "Apache Echarts", brief: "Apache ECharts是一款基于JavaScript的开源可视化图表库，支持20多种图表类型。", functions: "1.图表类型\n①基础图表：柱状图（条形图）、折线图（面积图）、饼图（环形图、南丁格尔玫瑰图）、散点图（气泡图），几乎覆盖所有数据分析常规需求\n②统计图表：K线图（股票烛台图）、盒须图（箱线图），支持统计分布和财务数据展示\n③地理信息图表：地图、热力图、线图（迁徙图），支持GeoJSON和SVG扩展\n④关系图表：关系图、矩形树图、旭日图（多层环形饼图），展示层级和网状关系数据\n⑤多维及专业图表：平行坐标轴、漏斗图、仪表盘、桑基图、词云、主题河流图、日历坐标图等\n⑥支持图表混搭，在一个坐标系内混合多种图表类型，以及图与图之间组合布局\n2.交互特性\n①提供数据区域缩放、图表切换、图例开关、Tooltip悬浮提示、数据刷选（框选高亮）、图表下钻/上卷等丰富的交互组件\n②支持多图表联动，点击任一图表可触发其他图表的筛选高亮，强化数据关联性发现\n③支持大数据量场景下的渐进式渲染和数据采样，保证界面流畅度", url: "https://echarts.apache.org/zh/index.html", tags: "数据可视化" },
+// ===================== 科研绘图 =====================
+{ category: "科研绘图", name: "Nano Banana", brief: "Nano Banana是由Google Gemini系列多模态大模型驱动的AI图像生成与编辑平台。", functions: "1.AI图像生成\n①支持输入自然语言提示词生成高质量图像，用时约1-3分钟\n②可自定义图像尺寸/比例及画质精细度\n③采用Gemini Flash Image模型，具备序列上下文感知和交错生成能力\n2.Nano Banana Pro高级功能\n①突破性文本渲染：生成带有清晰文字的图像，适用于海报、LOGO、UI界面\n②多图融合：最多融合10张参考图像，进行创造性重组\n③专业4K输出：原生高分辨率，满足商业出版需求\n④空间布局理解：支持3D对象操作，多主体编辑时保持特征一致性\n3.图像编辑与创意处理\n①支持风格转换（美妆、时尚、插画等）\n②多角度角色保持：在不同视角下保持角色外观稳定\n③多图合并与序列生成：将最多3张图组合成连贯构图或连续叙事\n④超现实艺术创作与风格集成", url: "https://nanobanana.co/zh", tags: "科研绘图" },
+{ category: "科研绘图", name: "boardmix", brief: "博思白板boardmix是一款AI驱动的在线协作白板，提供思维导图、流程图等多种图表绘制工具。", functions: "1.AI智能绘图\n①输入主题关键词或自然语言描述，AI可一键生成结构化思维导图、流程图，并能根据上下文自动推荐SWOT、五力模型等商业分析框架\n②支持通过自然语言描述逻辑步骤，AI自动识别判定条件、执行动作和数据流向，按标准符号库自动排版生成流程图\n③内置50+图形库，涵盖业务流程图、UML、架构图、组织架构图、用户旅程图等多种图表类型\n2.团队协作办公\n①支持多人同时在线编辑，实时同步更新，最高支持500人团队协作\n②支持将白板内容一键转换为演示文稿（PPT），实现从创意到可视化表达的一站式输出\n③支持与视频会议、项目管理工具等集成，适配课堂教学、企业培训等场景", url: "https://boardmix.cn/ai-whiteboard/?code=Gc0GUAjDRBrz", tags: "科研绘图" },
+{ category: "科研绘图", name: "MedPeer", brief: "MedPeer是一款专为科研人员设计的AI科研绘图工具，内置10万+多学科矢量图标和2000+顶刊模板。", functions: "1.素材与模板\n①内置10万+多学科矢量图标，覆盖生物医学、化学、材料科学等30+学科，包含细胞通路、实验流程、分子结构、数据图表等科研全场景\n②提供2000+模仿Nature、Cell等顶刊风格的专业模板，涵盖示意图、流程图、数据可视化图等类型，可直接替换数据进行套用\n③系统根据绘图主题智能推荐相关图标，提升找图效率\n2.AI图片创作\n①支持自由自定义画布比例和图片分辨率，完美适配各大SCI期刊、基金申报书的格式规范\n②支持上传手绘草图或简易草稿，AI能精准还原设计思路并完成专业化渲染\n3.格式导出与合规\n①支持PNG、TIFF、PDF、JPEG等多种格式导出，TIFF格式最高可达1200dpi分辨率\n②内置符合学术规范的色彩搭配和元素布局，提供AI一键智能改色功能", url: "https://product.medpeer.cn/product/index/productDetails?page=drawing&P_S_C=keyanmate", tags: "科研绘图" },
+{ category: "科研绘图", name: "ColorDrop", brief: "ColorDrop是一款便捷的在线色彩提取与配色工具，支持AI生成配色方案。", functions: "1.配色方案\n①提供成千上万种精美配色方案，按柔和、明亮、动感等印象类型分类，以四宫格颜色为一组展示\n②每天自动生成新的配色方案，涵盖每年流行的颜色搭配及CSS色彩分类，每年流行渐变色彩均可一键预览\n③支持AI生成配色方案，用户可通过英文输入生成精美化配色主题\n2.色彩获取\n①点击任意颜色即可显示并一键复制其十六进制（HEX）颜色值，方便在设计软件中直接使用\n②支持上传图片，AI自动识别并提取图片中最显眼的颜色，生成相应配色方案\n3.交互与预览\n①支持更换不同背景颜色，预览在不同背景配色中套用某种颜色的视觉效果\n②网站包含日本传统色辞典等特色功能，可查阅中国传统/日本传统色彩命名，点击色彩可直接吸取色值\n③支持颜色搜索与筛选，便于用户根据需求查找特定配色", url: "https://colordrop.io/", tags: "科研绘图,配色工具" },
+{ category: "科研绘图", name: "FigDraw", brief: "FigDraw是国内首个开放式原创素材在线绘图平台，拥有1.6万个原创矢量素材。", functions: "1.原创素材与模板\n①拥有超过1.6万个原创矢量素材，包含国自然技术路线图、通路图、蛋白质修饰、单细胞测序、细胞、蛋白、核酸、人体结构、医学手绘、国风素材、3D元素等\n②提供大量顶刊级原创模板，涵盖示意图、流程与技术路线图等常见科研配图类型，可给用户带来排版与用色灵感\n③支持用户上传自有素材（支持svg、jpg、png等格式），并可对上传图进行裁剪、修改色系、饱和度等调整\n2.智能绘图工具\n①支持对矢量素材进行简单的拖拽、拆分、组合等操作，无需专业绘图技能即可完成个性化绘制\n②内置AI智能改色系统，基于上千张CNS配图总结的配色方案，结合中国传统色，一键修改图色的色相与饱和度\n③智能流程图板块提供大量可编辑形状，支持任意改动圆角、边线、颜色、角度，配备可追随箭头辅助排版", url: "https://www.figdraw.com/#/", tags: "科研绘图" },
+{ category: "科研绘图", name: "Biorender", brief: "BioRender是一款专为生命科学领域设计的在线科研绘图工具，提供超过4万种预绘制科学图标。", functions: "1.图标库与模板\n①提供超过4万种预绘制科学图标，覆盖神经科学、免疫学、微生物学、细胞生物学等30多个生命科学领域\n②搭配多种图库分类、版型以及官方授权模板，涵盖实验方法、生化通路、细胞结构等常见科研场景\n2.AI编辑功能\n①集成BioRender AI，支持Apply BioRender Style（一键应用BioRender风格）、Remove Background（移除背景）、Apply 3D Style（应用3D风格）、Adjust Colors（颜色调整）、Remove Text（移除文本）等AI操作\n②提供Smart Search智能搜索功能辅助快速查找图标\n3.协作与出版\n①支持直观的拖拽式创建和修改功能，可轻松更新或修改图表\n②支持导出为出版、展示、网页和打印等多种格式，享有出版许可保护，可将图表用于期刊、文章、宣传材料等\n③安全Web门户自动保存工作，支持团队云端存储和安全共享图标及文件", url: "https://www.biorender.com/", tags: "科研绘图" },
+{ category: "科研绘图", name: "Freepik", brief: "Freepik是一个AI驱动的创意平台，集成超过36种AI图像模型，提供矢量素材和AI图像生成。", functions: "1.AI图像与视频生成\n①提供超过39种AI图像生成模型访问权限（截至2026年3月），包括Nano Banana、Nano Banana Pro、Kling 2.5、Google Veo 3.1、Seedream 4.5等市场领先模型\n②Premium+和Pro订阅用户享2K分辨率的Nano Banana Pro无限生成服务，4K分辨率生成信用成本大幅降低至150积分/次（原500积分）\n③支持Kling 2.5视频生成（720p、5秒）无限使用，Kling 2.6 Motion Control信用成本降至250积分/次（原325积分）\n2.图像编辑与处理\n①集成Magnific AI图像放大技术，提供图像高清无损放大功能\n②支持AI图像变体工具，基于单张参考图进行图像重构、故事板延展、人物模式保持身份、自定义模式修改场景与细节等操作\n③提供背景移除、图像转制、AI图像生成器、AI变体等全套编辑工具\n③支持多模型并行，最多支持8个并行生成\n3.素材库与变体工具\n①收录海量矢量图、PSD模板、照片和图标，涵盖Adobe Stock、Shutterstock等高质量资源\n②支持基于单张参考图进行四类可控编辑：图像重构（补全视角/构图）、故事板延展（生成连贯视觉叙事）、人物模式（保持身份一致调整特征）、自定义模式（灵活修改场景、光影、细节等），所有操作均通过提示词预设实现", url: "https://cn.freepik.com/", tags: "科研绘图" },
+{ category: "科研绘图", name: "Vecteezy", brief: "Vecteezy是一个在线矢量素材和创意资产交易平台，提供数百万高质量免费的矢量图、照片、视频。", functions: "1.素材库\n①提供数百万高质量免费矢量图、照片、视频和模板，涵盖矢量插画元素、可编辑SVG模板、AI生成素材等\n②2025年新增社论影像板块，提供体育、新闻和娱乐类图像供社交媒体使用\n2.搜索与筛选\n①提供九种搜索筛选器，支持按许可证类型（免费/Pro/社论/AI生成/全部）、颜色（色轮或十六进制码输入）、方向（横向/纵向/方形/全景）、图片风格（抽象/特写/剪切/留白空间/静物）等条件筛选\n②支持排序（最佳匹配/最新）和AI内容过滤（AI图像/非AI图像/全部）", url: "https://www.vecteezy.com/", tags: "科研绘图" },
+{ category: "科研绘图", name: "SciDraw", brief: "SciDraw是由AI驱动的科研绘图平台，支持自然语言描述、草图上传生成出版级科研配图。", functions: "1.AI生成模式\n①Prompt模式：用户输入自然语言描述，AI即可生成结构化科研插图，支持多轮对话迭代调整细节，内置TOC图形摘要、实验工作流、信号通路等常用模板及多种艺术风格\n②Sketch模式：支持上传手绘草图照片，AI自动识别拓扑结构并转化为出版级别专业示意图，保留原始草图的节点位置和连接关系\n③Free Edit模式：用户上传已有图片后通过自然语言下达编辑指令，支持背景更换、标注字体统一、元素添加/删除等操作，无需专业图像处理软件\n2.格式与发表\n①支持导出SVG矢量格式，可在Illustrator、Inkscape、PowerPoint中进行二次编辑，区别于通用AI生图工具仅输出光栅图的限制\n②内置期刊投稿格式检查器，自动检测图片分辨率（照片300 DPI、线稿600-1200 DPI）、格式（PNG/TIFF/SVG）和色彩方案是否通过色盲友好测试\n③提供图形摘要生成功能，支持根据不同期刊的尺寸和配色规范调整输出；内置技术路线图制作器，输出项目时间线和研究方案流程图\n3.免费模式\n①免费注册后每月赠送20积分，足量生成多张图片\n②已覆盖全球20多个国家，累计生成超10万张科研配图", url: "https://scidraw.io/", tags: "科研绘图" },
+{ category: "科研绘图", name: "Hiplot", brief: "Hiplot是一款免费且功能强大的生物医学数据可视化平台，提供上千种图表模板。", functions: "1.图表矩阵\n①提供上千种图表模板，包括散点图、线图、热图、柱状图、饼图、热力图、火山图、生存分析图、韦恩图、PCA图、箱线图等，覆盖数据统计与生物信息学分析的主流可视化需求\n②支持平行坐标图等高维数据可视化，用于深度学习调参和超参数探索等场景\n③提供多样化的图形展示方式，用户可根据实验数据特点选择最适合的展示形式\n2.AI分类推荐与数据处理\n①基于AI智能推荐系统，通过多维度数据理解和用户意图识别技术，精准推荐图表类型\n②支持上传标准化数据（整合多种组学数据），AI自动识别数据特征并推荐最佳可视化形式③实时调整图表参数，支持图片在线预览和导出，导出格式适配SCI投稿要求\n3.全流程平台整合\n①整合绘图、分析、学习和需求解决等功能，一个平台即可完成从数据可视化到深度分析的全过程\n②免费功能完全满足日常科研绘图需求，部分高级功能可能需要付费升级", url: "https://hiplot.com.cn/home/index.html", tags: "科研绘图,免费" },
+// ===================== AI学术工具 =====================
+{ category: "AI学术工具", name: "DeepSeek", brief: "DeepSeek是深度求索自主研发的大语言模型，专注于代码、数学、逻辑推理与通用任务。", functions: "1.编程开发\n①支持80+编程语言（Python、Java、C++、JavaScript、Go、Rust、SQL、MATLAB等）\n②生成可直接运行的代码（带注释、符合规范、处理边界条件）\n③调试与优化：指出Bug、提升性能、转换语言（如Python→C++）\n④工程级项目：搭建Web应用、数据分析脚本、机器学习pipeline\n2.数学与科学计算\n①解高中/大学数学题（微积分、线性代数、概率统计、微分方程）\n②物理/化学公式推导与数值计算\n③支持LaTeX输出，适合论文写作\n④在AIME、MATH等权威评测中超越GPT-4\n3.学术与技术写作\n①撰写论文引言、方法、结论\n②生成技术报告、项目文档、API说明\n③中英文学术翻译（保留专业术语）\n④自动整理参考文献格式（APA/GB/T 7714）\n4.智能问答与知识检索\n①回答计算机、电子、金融、工程等领域专业问题\n②结合最新技术趋势（如AI、量子计算、6G）\n③支持128K超长上下文，可分析整篇PDF或长文档", url: "https://chat.deepseek.com/", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "AiPy", brief: "AiPy是一款“AI大模型+Python执行环境”的数字员工，能理解需求并直接执行代码交付结果。", functions: "1.自动化任务执行\n①AI理解需求后，结合 Python 生态自动生成执行方案，直接运行并交付结果\n②可完成数据分析、文件批量处理、爬虫、自动化办公流程等具体任务\n③案例：22 万条无格式存储科研数据，十分钟内完成分析\n④帮助财务人员发现电商结算账单错误，挽回了 150 万元损失\n⑤非技术背景用户借助 AiPy 开发了 HR 智能简历筛选系统\n2.大文件与海量数据处理\n①支持分析 10GB 以上的超大规模文件，以及同时分析 1000 个海量文件\n②可分析内网数据库、本机 CAD 图纸、Excel/CSV 等非格式化科研数据\n3.多场景应用\n①可生成数百页招标文件、编写计算机辅助设计程序、生成测试用例等\n②生成产品原型图设计（直接输出 HTML 文件）、小说创作智能体等\n③支持分析实验室仪器的实时数据并生成监测报告\n4.平台特色\n①对非技术人员友好，支持中文界面，中国大陆无门槛使用\n②支持控制本机其它软件、APP 和局域网设备\n③支持生成图片、音视频等多模态内容\n④提供免费下载试用", url: "https://www.aipyaipy.com/?referral=BJ5OOSP&utm=cg&cgv=yanweb", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "沁言学术", brief: "沁言学术是一款面向高校、科研机构的一站式AI学术科研平台，覆盖科研全生命周期。", functions: "1.全流程学术服务\n①覆盖从 AI选题、文献检索、文献下载、文献阅读，到笔记整理、学术问答、辅助写作的全链路\n②支持多源一站式检索，可智能筛选与多维检索，平均节省 80% 检索时间\n③支持 95% 以上文献一键批量下载与自动整理\n2.AI辅助写作与研究\n①支持文献综述智能生成，综述效率提升 70%\n②支持润色、翻译、出提纲、方法设计、研究论述撰写\n③支持调研报告自动生成、脑图梳理（文献脉络可视化）、研究设计大纲规划", url: "https://app.qinyanai.com/?utm_source=cakegrowth&utm_medium=vzdkjq8n1r&sourceCode=MEZ7I0R6", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "AskManyAI", brief: "AskManyAI是一站式多模型AI聚合平台，支持“一问多答”同时向多个顶尖AI模型提问。", functions: "1.多模型协同问答\n①支持一次性向多个顶尖 AI 模型提问，获取多角度答案，便于分析对比，筛选最优解\n②集成模型覆盖主流国内外大模型，如 GPT-4、Claude、Gemini、Grok、Kimi、DeepSeek、文心 4.0 等\n2.多功能集成\n①支持文本对话、联网搜索，提供实时信息获取能力\n②支持文档分析和代码编程、AI 绘画等高级功能\n3.教育与科研应用\n①为复杂问题（如科研假设验证、学术观点论证）提供不同模型的交叉验证\n②支持对上传的文档（如实验报告、复习资料）进行多模型智能分析与对比\n4.使用便捷性\n①提供友好的免费试用额度，方便新用户探索和体验\n②适配团队协作和项目管理，为企业和开发团队提供多模型一体化的使用环境", url: "https://askmany.cn/login?i=c18638ff", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "Gemini", brief: "Gemini是Google开发的原生多模态大模型，支持文本、图像、音频、视频的统一理解与推理。", functions: "1.原生多模态交互\n①支持文本、图像、代码、音频、视频的统一理解与推理，无需多步骤转换，实现真正的“原生多模态”\n②可处理复杂跨模态信息，如解读图表、生成视频字幕、理解屏幕内容并做出智能反应\n③结合图像生成模型（如 Nano Banana）可实现文生图、科研绘图等高级视觉创作\n2.超长上下文与推理能力\n①支持 200 万 Token 的超长上下文窗口，可一次性处理整部《战争与和平》或多篇长篇论文\n②在 AIME、MATH 等数学推理权威评测中展现高水平性能\n③具备强大的代码理解与生成能力，支持多种编程语言\n3.跨应用智能与生态集成\n①可通过自然语言直接调用 Gmail、Google Drive、地图、YouTube、日历等 Google 生态应用执行任务\n②可跨应用整理资料、生成报告、管理日程、处理邮件，实现端到端的智能体工作流", url: "https://gemini.google.com/?hl=zh-HK", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "千问", brief: "千问是阿里云自主研发的大语言模型系列，已演进为覆盖语言、数学、代码及视觉生成的全模态模型。", functions: "1.多模态理解与生成\n①原生统一架构整合文本、图像、视频、音频的全面理解与生成\n②包含多模态视觉生成基座模型，支持文生图、文生视频等创作能力\n③支持图像识别、视频分析和跨模态任务，可灵活应用于内容创作与智能交互场景\n2.超大上下文\n①最新模型支持百万级Token的上下文窗口，可一次性处理整部《红楼梦》并精准描述细节\n②适用于海量文档分析、超长记忆、复杂推理等企业级及科研场景\n3.编程与数学能力\n①专门优化的数学与代码模型在 MathQA、HumanEval 等专业评估中具备高水平性能\n②支持多种编程语言的代码生成、调试和转换\n③可用于学术研究、工程计算和软件开发等任务\n4.多语言与行业生态\n①支持 119 种语言，为全球开源社区下载量最高的中文大模型\n②Qwen-MT 模型擅长中英互译、中文与小语种互译（含日、韩、法、西、德、泰等 26 种）\n③构建全球最大开源大模型生态，衍生模型超 20 万款，全球下载量突破 10 亿次\n④千问App已全面接入淘宝、支付宝、飞猪、高德等阿里生态核心业务，形成智能体经济全场景覆盖", url: "https://www.qianwen.com/", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "ChatGPT", brief: "ChatGPT是OpenAI开发的最广泛使用的AI对话助手，具备强大的通用生成和理解能力。", functions: "1.通用对话与推理\n①支持从日常对话到复杂问题的自然语言理解与生成\n②内置多种推理版本模型（如 o1、o3-mini 系列），在数学、科学和编程等推理密集型任务中具有高水平表现\n2.多模态理解与创作\n①支持对上传的图像进行识别与分析\n②支持文档上传，提取并分析其中的文字信息，适用于文献阅读、数据处理等场景\n③结合 DALL-E 等模型集成可生成高质量图像\n3.编程辅助\n①支持 80+ 编程语言（Python、Java、C++、JavaScript、Go、Rust 等）的代码编写、调试、优化和解释\n②可辅助搭建完整应用、自动化脚本和数据分析流程，适用于科研和工程开发\n4.学术与研究辅助\n①支持文献摘要、学术文稿润色和修改、中英互译\n②自动整理满足主流格式（APA、MLA、GB/T 7714 等）的参考文献\n③适用于论文写作、研究报告和科研材料准备等场景", url: "https://chatgpt.com", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "秒哒", brief: "秒哒是百度开发的零代码应用生成式开发平台，通过对话即可创建网页、小程序、游戏等应用。", functions: "1.无代码对话式应用生成\n①通过自然语言表达需求，AI 自动生成完整可运行的应用，无需任何编程背景\n②生成时间约为 5 分钟左右，实现从“对话到应用”的一站式落地\n③支持生成多种应用类型：网页、小程序、游戏等\n2.Skill 与 OpenClaw 集成\n①发布全球首个应用生成 Skill，支持与 OpenClaw 智能体对接，形成开发生态\n②支持应用全生命周期操作：查询应用清单、新建或修改应用、追溯完整对话开发历史\n③支持配置微信授权，将开发的小程序发布至自有微信小程序渠道", url: "https://www.miaoda.cn/?invitecode=user-7600x2qp1edc", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "AskGo", brief: "AskGo是多模型集成AI聊天助手平台，将ChatGPT、DeepSeek、Claude、Gemini等数十个模型聚合统一界面。", functions: "1.多模型聚合与一站式入口\n①集成 GPT 系列、DeepSeek、Claude 系列、Gemini、Grok、Kimi 等数十个国内外主流顶尖模型\n②覆盖聊天、搜索、阅读、创意写作、程序开发、专业翻译、图像生成、视频生成全场景能力\n③为开发者简化多模型接入流程，无需为每个模型的更新进行重复适配\n2.课程与代码辅助\n①支持常规编程辅助：代码生成、调试、优化、跨语言转换\n②在复杂任务场景，用户可同时调用不同模型（如 Gemini + Claude + DeepSeek）协同完成\n3.科研绘图与应用创作\n①在中英文科研社区被广泛用于科研绘图（如结合图像生成模型进行 BioRender 风格的科研图表生成）\n②支持对不同模型生成的图像结果进行对比，选择最优可视化方案", url: "https://askgo.io/", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "HopeAI", brief: "HopeAI集成了Claude 4.7 Opus、DeepSeek V4 Flash等多种国际先进模型的AI智能体对话助手。", functions: "1.多模型集成访问\n①集成了 Claude 系列（4.7 Opus、4.6 Opus/Sonnet、4.5 Sonnet/Opus/Haiku 等）\n②支持 DeepSeek（V4 Flash、R1/V3 等）、Gemini（Gemini 2.5 Pro 等）、GPT-4o、Grok-3、o3-mini-high、腾讯混元、智谱清言等多款模型\n③单平台覆盖代码生成、长文本处理、智能体任务、复杂推理等多种专业工作\n2.多场景应用\n①适用于专业文档处理、长文摘要整理（支持多模型长上下文窗口）\n②可用于代码编写、智能体任务搭建、科研人员文本分析等场景\n③满足个人专业使用、企业初步 AI 集成、科研人员文本分析等需求\n3.功能与技术特征\n①通过多模型并发或切换机制，让用户能选择合适的 AI 版本应对差异化任务\n②支持邀请注册机制，用户可通过邀请码快速体验最新模型能力\n③提供全面的模型能力覆盖，支持专业级别的编程、智能体工作流等高级任务", url: "https://chat.hopeai.cc/list/#/register?inviter=H8389H", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "Flowith", brief: "Flowith是基于画布的多智能体AI原生操作系统，支持同时在画布上组织和调度多个AI智能体并行执行。", functions: "1.画布式多智能体协作\n①AI 智能体以节点形式进入画布，用户可将智能体工作组织为节点和分支进行视觉化编排\n②支持子智能体并行执行批量任务，从历史画布中提取上下文\n③支持超过 1000 个步骤的开放式任务执行（如网站开发、代码构建、演示文稿生成的全流程自动化）\n2.超长上下文与并行工作\n①拥有超大规模无限上下文支持，可处理科技项目全周期记忆和分析超长文档\n②可实现多任务并行处理，多个 AI 智能体在同一画布上执行不同子任务\n③Agent 调度支持长期监控分析（如高频交易监控、社交媒体运营）\n3.多模型访问与多模态生成\n①平台支持 GPT-5、Claude 4.5/4.7 Opus、DeepSeek、Kimi 等 40 多个模型的访问\n②支持图像生成、视频生成、代码构建、PPT 生成等多种内容创作类型\n③可同时调用多个模型对比不同生成结果，便于筛选最优方案", url: "https://flowith.io/blank", tags: "AI智能工具" },
+{ category: "AI学术工具", name: "AstronClaw", brief: "AstronClaw是讯飞推出的AI智能体平台（讯飞星辰Agent平台），提供零代码配置的一键部署模块。", functions: "1.零代码智能体部署\n①零代码配置，无需编程即可一键构建 AI 智能体\n②内置多种模型与丰富的官方技能，支持自定义技能生成\n③解决部署成本高、环境依赖强等痛点\n2.多档位订阅计划\n①提供基础版：适合初级开发者、C 端尝鲜用户，月费 16.8 元，首购优惠 168 元\n②提供专业版：适合专业开发者、企业级用户，月费 56.8 元，首购优惠 568 元\n③订阅包含相应积分（基础版月赠 35000，专业版月赠 120000），每日登录额外赠送 200 积分", url: "https://agent.xfyun.cn/astron-claw/?ch=astronclaw_cg_p5F9", tags: "AI智能工具" },
+// ===================== PPT工具 =====================
+{ category: "PPT工具", name: "AiPPT", brief: "AiPPT是一款全智能AI一键生成PPT的在线创作平台，输入一句话，1分钟生成专业演示文稿。", functions: "1.AI一键生成完整PPT\n①输入任意主题（如“碳中和政策解读”“大学生创新创业计划书”），AI自动生成逻辑清晰的大纲（含章节结构）\n②自动撰写每页文案内容（标题+要点）\n③自动匹配行业风格模板（科技、教育、医疗、党政等）\n④输出可直接编辑的PPT，支持下载.pptx或在线演示\n2.智能润色与排版\n①AI内容优化：对已有文案进行精炼、扩写或风格调整（如“更正式”“更简洁”）\n②智能配色与字体：自动应用视觉协调的设计方案\n③一键换装：已有PPT可快速更换整套模板风格\n④文档转PPT：上传Word/PDF/TXT，AI提取核心信息生成演示文稿\n3.海量模板与场景覆盖\n①覆盖50+行业与100+场景，包括教育（教学课件、说课稿、家长会）、职场（年终总结、项目复盘、述职报告）、创业（BP商业计划书、融资路演）、学生（毕业答辩、社团招新、课堂展示）、党政（党建汇报、政策宣讲、乡村振兴）等", url: "https://www.aippt.cn/?utm_type=Navweb&utm_source=keyan&utm_page=aippt&utm_plan=aippt&utm_unit=AIPPT&utm_keyword=40517289", tags: "PPT制作" },
+{ category: "PPT工具", name: "笔格PPT", brief: "笔格PPT是一款面向学生、教师、职场人士及企业用户的AI智能PPT生成与设计平台。", functions: "1.AI一键生成PPT\n①输入任意主题（如“人工智能发展趋势”“毕业答辩”“产品发布会”），AI自动生成逻辑清晰的大纲\n②自动撰写每页内容要点\n③自动匹配行业风格模板与配色方案\n④输出完整可编辑PPT（.pptx格式）\n2.海量专业模板库\n①覆盖热门行业与场景，包括科技互联网、医疗健康、教育培训、地产家居、党政司法等行业类，以及工作总结、教学课件、毕业答辩、招聘宣讲、品牌营销、表彰颁奖等场景类\n②提供简约风、科技风、商务风、手绘风、文艺风等多种设计风格\n3.智能编辑与美化\n①一键换模板：已有PPT可快速更换整体设计风格\n②一键换色/换字体：统一调整视觉风格\n③AI图片推荐：根据内容自动匹配高清插图\n④文档转PPT：上传Word/PDF/TXT，AI提取大纲生成演示文稿", url: "https://bigppt.cn/?hmmd=yan", tags: "PPT制作" },
+{ category: "PPT工具", name: "GAI PPT", brief: "GAI PPT是一款兼顾模板生成与智能美化的AI演示工具，支持一句话生成完整PPT。", functions: "1.AI一键生成PPT\n①用户只需输入一个主题，AI自动生成逻辑清晰的大纲结构、撰写每页内容要点、匹配专业设计模板，输出完整可编辑的PPT（支持下载.pptx）\n②支持多轮优化，可对生成结果进行“换一换”、“重新生成”或局部修改\n\n2.丰富场景化模板库\n①官网首页展示典型主题包括：地方特色手工艺品市场研究、AI在智能驾驶辅助系统的发展、未来行业发展趋势预测、社区艺术舞蹈工作室方案、中国传统文化艺术之美\n②覆盖教育、商业、文化、科技、政务等多个领域，风格偏向简约、商务、国风\n\n3.文档导入生成\n①支持上传Word/PDF/TXT文档，AI自动提取核心内容并转化为结构化PPT\n②适合将已有报告、论文、策划案快速转为演示格式", url: "https://www.gaippt.com/?shareCode=HbqwElkfpU", tags: "PPT制作" },
+{ category: "PPT工具", name: "iSlide", brief: "iSlide是一个专注于PPT智能设计与效率提升的平台，面向职场人士、教育工作者、企业用户。", functions: ".AI一键生成PPT\n①输入一句话主题，AI自动生成结构完整、设计美观的演示文稿\n2.多格式文档导入\n①支持Word、脑图、文本等7种格式自动解析并转为PPT\n3.海量正版素材库\n①超1400万+PPT模板、图表、图片等资源，覆盖100+行业场景（如医疗、教育、金融等），商用无版权风险\n4.智能编辑工具\n①一键换肤/单页美化\n②AI文本润色（扩写、改写、翻译）\n③智能排版、快速对齐、批量优化等40+提效功能", url: "https://www.islide.cc/landing?utm=cg&cgv=9omkl9zk4d", tags: "PPT制作" },
+{ category: "PPT工具", name: "Pi", brief: "Pi是国内首个采用AI-Native编辑架构的智能演示文档平台，通过大模型自主调度实现从零创作。", functions: "1.AI全流程生成PPT\n①输入主题、大纲或一段文字，AI自动理解内容意图\n②生成逻辑清晰的结构（如“问题—分析—解决方案”）\n③撰写每页文案 + 推荐数据可视化形式\n④匹配美学设计模板（含字体、配色、版式）\n2.多模态知识引擎\n①支持上传多种素材作为生成依据：PDF、Word、PPT、网页链接、笔记、图片、视频、表格数据\n②AI自动提取关键信息，融合生成连贯演示文稿\n3.智能信息可视化\n①自动将数据转化为图表（柱状图、折线图、流程图等）\n②支持AI生成插图（通过文本描述生成示意图）\n③内置数百万高清图片/视频素材库，智能推荐匹配内容", url: "https://pi.deepvinci.tech/idea?share_token=G3I6IFTGF6WKA", tags: "PPT制作" },
+{ category: "PPT工具", name: "Carwa可画", brief: "Canva可画是全球领先的在线视觉传播与协作平台，集成AI能力，支持多人同时在线制作PPT。", functions: "1.AI一键生成演示文稿\n①输入主题描述，Magic Design自动生成可编辑的演示文稿初稿\n②支持对话式设计、文案润色、背景生成、一键抠图、对象级智能编辑等AI功能\n2.海量模板与素材库\n①免费版超50万模板和200多万设计元素，付费版解锁超1亿张正版照片、视频、音频\n②超16万份中文模板，覆盖社交媒体、演示文稿、宣传物料、商业文书等全场景\n3.智能编辑与多格式支持\n①生成PPT可导出为PPTX，高度兼容PowerPoint和WPS，支持PDF、PNG、JPG等格式\n②支持视频编辑、在线文档翻译、白板、电子表格等多元视觉内容创作\n4.团队协作与品牌管理\n①多人实时在线协作，支持评论、审批流程\n②团队版提供品牌中心、模板锁定、品牌工具包等企业级功能\n③免费版提供基础编辑和5GB云存储，付费版解锁高级AI和1TB空间", url: "https://www.canva.cn/", tags: "PPT制作" },
+{ category: "PPT工具", name: "咔片", brief: "咔片是轻量化在线演示设计平台，支持导入Word、Xmind等45+种文档格式，基础功能永久免费。", functions: "1.AI一键生成PPT\n①输入主题或上传Word/Xmind/Markdown等7+种文档格式，AI自动生成完整PPT\n②支持“单个指令重写优化”的对话式编辑，可根据指令逐页调整\n2.海量原创模板\n①涵盖市场营销、教育培训、管理者述职、学生汇报等全行业场景\n②包含商务、教育、科技、国潮等多种设计风格\n3.单页AI设计与动态链接\n①新增页只需提供标题描述或文案，AI自动完成PPT页面设计\n②一个链接代替多个版本，内容更新实时同步，支持微信小程序、H5、PC多端访问\n4.AI辅助编辑\n①扩写、精简、润色、翻译、生成标题一站式完成\n②一键换肤智能美化，内容与样式独立，主题设计风格一键调整\n③原生兼容PPT/WPS，支持离线编辑", url: "https://www.cappt.cc/?mtm_campaign=CZQD-aigjg-ppt-10010", tags: "PPT制作" },
+{ category: "PPT工具", name: "博思AIPPT", brief: "博思AIPPT融合白板基因，支持多种格式导入，提供200+行业精品模板。", functions: "1.AI一键生成PPT\n①输入一句话主题，AI自动生成PPT目录、文案、配色、配图，2-3秒生成一页\n②支持“快速生成”和“按照大纲生成”两种模式\n2.多格式文档导入\n①兼容Word、PDF、Markdown、TXT、思维导图、音频文件等多种格式\n②导入后AI自动解析并快速生成PPT\n3.智能排版与AI重写\n①自动排版，提供多种预设配色方案，涵盖商务、教育、科技等不同风格\n②AI美化PPT，纠正语法错误、优化句式结构\n③AI生成演讲稿，实现从PPT制作到演示的全流程打通\n4.海量模板与场景覆盖\n①内置200+种精品模板，覆盖市场营销、销售、教师、学生、运营、咨询师等全行业场景\n②免费开始，无需注册即可体验", url: "https://pptgo.cn/?utm_source=referrals&utm_content=aigongjuge&_channel_track_key=DlANdacY", tags: "PPT制作" },
+{ category: "PPT工具", name: "麦当秀", brief: "麦当秀是一款AI驱动的智能演示文稿生成工具，免费使用，输入一句话主题即可1分钟生成PPT。", functions: "1.AI一键生成PPT\n①输入标题或关键词，AI在1分钟内自动生成包含布局、文本、图片的完整PPT\n②支持多轮优化和局部内容修改\n2.多格式文档导入\n①支持Word、PDF、Markdown、TXT等格式文件导入，智能解析自动转换\n②本地模板可一键转为在线PPT\n3.AI智能配图与多语言\n①根据PPT内容或关键词快速生成匹配图片，用户可自定义调整\n②支持中文、英文、日语、韩语等多种语言，系统自动翻译并保留原有排版\n4.云端多端同步\n①浏览器端自动保存，支持在线编辑，手机和电脑实时同步\n②完全免费，支持无水印导出", url: "https://www.mindshow.vip/workstation/?from=aito001#/home_page", tags: "PPT制作" },
+{ category: "PPT工具", name: "秒篇AIPPT", brief: "秒篇AIPPT采用“说明书”式定制机制，生成PPT前先输出内容说明书，用户确认后再生成。", functions: "1.AI一键生成PPT\n①输入PPT主题，30秒内生成完整PPT\n②支持链接生成PPT、大段文本生成PPT等多种方式\n2.“说明书”式内容定制\n①生成PPT前，AI先输出内容说明书，将内容细化到每一页的文字和设计要求\n②用户可将说明书微调确认后，再由AI生成最终PPT\n3.多格式导入\n①支持Word/PDF一键转PPT，保留文档结构与关键元素\n②支持链接生成和大段文本生成\n4.AI辅助编辑\n①AI自动生成结构化大纲，带内容解析，支持自定义编辑和修改\n②自动生成匹配主题风格的演讲逐字稿，确保演示流畅\n5.海量模板与全场景覆盖\n①内置丰富PPT模板库，涵盖学术报告、教学备课、政策宣讲、心得体会、工作总结等场景\n②覆盖学术、教育、职场、营销、设计方案等全行业场景", url: "https://www.miaopian.cn/?from=tomyres", tags: "PPT制作" },
+{ category: "PPT工具", name: "文多多AIPPT", brief: "文多多AIPPT是AI驱动演示文稿自动化工具，核心特色是私有化可部署、全场景适配、定制化服务。", functions: "1.AI一键生成PPT\n①输入PPT主题或要求，AI在1分钟内自动生成大纲与完整PPT\n②生成内容为100%可编辑的结构化源文件\n2.多格式导入\n①支持Word、PDF、思维导图等文档格式一键转换为PPT\n②保留文档中的结构、图像和表格等关键元素\n3.私有化部署\n①支持企业本地化独立部署，保障数据安全和合规性\n②基于企业VI规范的全链路模板定制，适配企业字体、配色、LOGO位置等视觉要求\n4.智能编辑美化\n①智能排版与自动配图，提供海量专业模板选择\n②基于预设排版方案和行业规范化布局，无需手动调整", url: "https://docmee.cn/zh?source=ai-to", tags: "PPT制作" },
+// ===================== 翻译工具 =====================
+{ category: "翻译工具", name: "DeepL", brief: "DeepL是一款基于神经网络的翻译与写作辅助工具，以“世界最准确的机器翻译”著称。", functions: "1.文档翻译与排版保留\n①支持PDF、Word、PPT、TXT等格式文件直接翻译，译文保留原文排版布局、表格结构与图表位置\n②支持网页即时翻译及浏览器插件（Edge、Chrome），可在Google Workspace中无缝使用\n2.专业术语与写作辅助\n①支持自建术语表，可上传学术或行业术语进行定制化训练，确保术语翻译一致性\n②AI写作助手可生成多种风格的文本变体，辅助润色和表达\n3.高精度翻译引擎\n①采用专有深度神经网络技术，具备上下文感知能力，自动修正歧义，译文流畅自然\n②Pro版不存储用户翻译内容，适合处理涉密或未发表学术文档", url: "https://www.deepl.com/zh/translator/l/en/en", tags: "翻译工具" },
+{ category: "翻译工具", name: "Doclingo", brief: "Doclingo是一款面向PDF与Office文档的AI翻译工具，可永久免费、不限次数翻译文档。", functions: "1.多格式文档翻译\n①支持PDF、Word、Excel、PowerPoint、SRT字幕、ePub等格式直接翻译，无需转换\n②支持中文、英文、日文等80+目标语言互译\n2.高质量翻译与排版保留\n①采用AI翻译引擎，可切换至ChatGPT、Gemini等高级引擎\n②翻译过程保留表格、公式、特殊符号等排版格式\n③支持图文混排翻译及OCR文字识别，可自定义排除LOGO、公式、公章等区域\n3.可永久免费翻译文档", url: "https://doclingo.cn/zh", tags: "翻译工具,免费" },
+{ category: "翻译工具", name: "知云文献翻译", brief: "知云文献翻译是一款自带PDF阅读器的划选翻译软件，专为科研人员设计。", functions: "1.文献阅读与集成翻译\n①内置PDF阅读器，可直接打开文献，无需在多个软件间切换\n②核心“划词翻译”功能：用鼠标选中单词、句子或段落，右侧立即显示译文\n③支持同时打开多篇文献及拆分视图对比阅读\n2.多引擎翻译与专业支持\n①内置百度、谷歌、DeepL及生物医学专用引擎等二十余种翻译引擎，可按需自由切换\n②涵盖生物医学专用引擎，对专业术语做了特别优化，适合医学、理工科领域\n③支持“输入翻译模式”，手动输入或粘贴文本进行翻译\n3.PDF智能批注与页面管理\n①提供高亮、附注、下划线、手写批注等多种注释工具\n②支持将同一篇文献拆分成多个视图，实现图文对照阅读\n③支持页面提取、拆分及从其他文档提取页面插入", url: "https://www.zhiyunwenxian.cn/", tags: "翻译工具" },
+{ category: "翻译工具", name: "WordStalk", brief: "WordsTalk 翻译助手是一款面向论文翻译和文献阅读的极简网页翻译工具，支持多模型直连。", functions: "1.多模型一站式接入，提升翻译效率\n①WordsTalk整合GPT、Claude、Gemini、DeepSeek、Grok、Perplexity等多款主流大模型，用户无需注册任何模型账号（含国外模型）、无需在多平台间切换，单网页即可获取所有模型译文\n②系统自动推荐最优模型，同时支持自主选择及多模型译文对比，彻底解决国外模型注册难、切换繁的痛点\n2.学科场景智能识别，保障专业适配\n①支持论文内容粘贴后自动识别所属学科与使用场景，涵盖经济学、法学、医学、理学、工学、管理学等细分学科，以及学术投稿、商务沟通、邮件往来等场景\n②精准匹配专属翻译策略，确保译文符合专业语境与表达规范\n3.百万级术语库支撑，确保术语精准统一\n①WordsTalk内置80万+专业术语资源，覆盖顶刊术语、WHO标准术语、国标术语、微软专业术语等权威来源\n②可自动识别原文术语并精准匹配，从根源上规避术语错译、前后表述不一致问题，保障译文的专业性与严谨性\n4.个人术语库自定义，适配长期科研场景\n①系统可自动提取原文常用术语，一键保存至个人定制术语库，后续翻译自动调用\n②个人术语库随使用积累优化，越用越贴合个人科研需求，适合论文、课题、项目中需要长期保持术语一致的场景\n5.翻译润色同步进行，降低后续优化成本\n①WordsTalk在翻译时会同步优化句式、语气和逻辑衔接，让译文更正式、克制、自然，减少直译感和“AI味”，更接近论文或投稿初稿的表达\n6.句句对照与回译核查\n①支持原文与译文句句对照，便于随时核查关键句、专业术语及逻辑细节，避免核心信息遗漏\n②配备回译核查功能，通过反向翻译验证译文准确性，保障译文严谨可用", url: "https://wordstalk.net/?stat=yanweb", tags: "翻译工具" },
+{ category: "翻译工具", name: "CNKI学术翻译", brief: "CNKI学术翻译是中国知网推出的专业学术翻译工具，依托知网海量中英双语学术文献语料库。", functions: "1.翻译助手\n①输入单词或短语（限500字符以内），系统展示来自专业词典的释义，并提供大量中英双语对照的真实学术论文例句，便于结合上下文判断最合适译法\n2.CNKI词典\n①专门用于查询专业术语、缩略语，支持中英文互查，结果精准", url: "https://dict.cnki.net/index", tags: "翻译工具" },
+{ category: "翻译工具", name: "arXiv论文翻译", brief: "arXiv论文翻译是有道翻译提供的专项学术翻译入口，针对arXiv预印本平台论文进行优化。", functions: "1.多格式翻译\n①支持文本、文档、网页的在线即时翻译\n2.arXiv论文一键翻译\n①直接输入arXiv论文摘要页面链接、PDF下载链接或其他格式源链接，系统快速提供全文翻译结果，并支持双语对照和译文两种查看模式，方便科研人员快速阅读和理解预印本论文\n3.翻译网页\n①通过输入网址翻译整个网页", url: "https://fanyi.youdao.com/trans/#/home", tags: "翻译工具" },
+{ category: "翻译工具", name: "讯飞同传", brief: "讯飞同传是科大讯飞推出的AI同声传译与字幕翻译平台，支持实时语音转写翻译。", functions: "1.实时同声传译\n①支持中英日韩俄法西等多语种实时语音识别与翻译\n②提供悬浮字幕条，可嵌入Zoom、腾讯会议等视频会议软件\n2.文件翻译与字幕生成\n①上传音频或视频文件，自动转写并生成双语字幕\n②支持PPT、PDF等文档内文字识别翻译\n3.专业术语定制\n①可上传行业术语表，提升翻译准确性\n②教育版、学术版针对科研场景有专项优化", url: "https://tongchuan.iflyrec.com/?channel=TJTC021", tags: "翻译工具,同声传译" },
+{ category: "翻译工具", name: "Wordtune", brief: "Wordtune是一款AI驱动的写作与改写工具，专注于提升英文文本的表达质量和风格。", functions: "1.智能改写与润色\n①输入一句话，AI提供多种改写版本，调整句式结构、词汇选择和语气\n②支持正式、轻松、简短等风格切换，适合英文论文语言优化\n2.扩写与总结\n①输入关键词或短语，AI可扩写为完整句子或段落\n②对长段落可生成精简摘要\n3.浏览器插件集成\n①支持在Google Docs、邮件等网页中直接调用Wordtune进行润色\n②免费版提供基础改写，付费版解锁更多词数和无限制使用", url: "https://www.wordtune.com/", tags: "翻译工具" },
+{ category: "翻译工具", name: "Quillbot", brief: "Quillbot是一款AI写作与改写助手，以强大的释义功能为核心，支持7种改写模式。", functions: "1.多模式释义改写\n①提供标准、流畅、创新、正式、缩短、扩充、学术共7种改写模式\n②一键生成同义替换版本，有效降低重复率，同时保留原意\n2.语法检查与摘要\n①实时检查语法、拼写和标点错误，给出修改建议\n②上传文本或文档，AI生成核心要点摘要\n3.浏览器插件与软件集成\n①支持网页、Chrome插件、Word桌面插件等多种使用方式\n②免费版限制125词/次，付费版无限字数并开放更多模式", url: "https://quillbot.com/", tags: "翻译工具" },
+{ category: "翻译工具", name: "Doc2X", brief: "Doc2X是一款PDF科学文献识别与翻译工具，主打高精度OCR识别复杂排版。", functions: "1.高精度公式与版面识别\n①专门优化的OCR引擎，可精准识别多栏排版、数学公式、化学结构式、表格\n②输出为LaTeX、MathML或Word格式，保留原始排版结构\n2.全文翻译\n①识别后可进行全文中英互译，生成双语对照文档\n②支持批量处理多篇文献\n3.学术场景定制\n①针对数学、物理、计算机、生物等学科的论文版面进行训练\n②提供网页版和API接口，满足个人与机构使用需求", url: "https://doc2x.noedgeai.com", tags: "翻译工具" },
+{ category: "翻译工具", name: "Smallpdf", brief: "Smallpdf是一款在线PDF处理工具包，提供压缩、转换、合并、分割、编辑、翻译等30余项功能。", functions: "1.PDF翻译\n①上传PDF文档，选择目标语言（中、英、日、韩、法、德等30+种），AI翻译后保留原排版\n②支持整篇翻译和摘要式翻译两种模式\n2.可与PDF处理流程集成\n①翻译前可先压缩、合并或转换格式，翻译后可直接导出为PDF或Word\n②支持多文档批量翻译\n3.免费与付费\n①免费用户每小时可处理1个任务，文档大小限制5MB\n②Pro版解锁无限制任务、更大文件和大文档翻译", url: "https://smallpdf.com/cn/translate-pdf", tags: "翻译工具" },
+// ===================== 代码工具 =====================
+{ category: "代码工具", name: "Trae", brief: "Trae是一款面向开发者的AI智能编程助手，定位为“真正的AI工程师”，深度参与软件开发全流程。", functions: "1.代码生成与自动化\n①支持中文自然语言一键生成完整代码框架，实时预览前端效果并智能修复Bug\n②Builder模式将产品需求通过自然语言描述自动转化为可运行的完整代码\n2.SOLO模式\n①以AI为主导，自动规划并执行从需求理解、代码生成、测试到成果预览的全流程\n②支持多任务并行、上下文压缩和DiffView代码变更工具，支持超大项目上下文管理\n3.智能辅助\n①Tab-Cue模块提供代码补全、多行修改、修改点预测功能\n②支持DeepSeek-V3.1、V3.2等最新模型，全部功能完全免费", url: "https://www.trae.cn/?utm_source=advertising&utm_medium=yanweb_ug_cpa&utm_term=hw_trae_yanweb", tags: "代码工具" },
+{ category: "代码工具", name: "InsCode", brief: "InsCode是CSDN、GitCode与华为云CodeArts IDE联合开发的AI跨平台集成开发环境。", functions: "1.代码生成与修改\n①通过嵌入式AI对话框，输入自然语言描述即可自动生成代码\n②支持全局代码生成/改写，可理解整个项目并生成/修改多个文件\n2.智能辅助功能\n①代码补全：在光标位置提供单行和多行代码补全建议，按Tab键接受\n②代码解释：快速解释选中代码或整个文件的逻辑\n③添加注释：自动为代码添加中文或英文注释\n④单元测试生成：自动生成测试用例\n⑤错误修复：分析代码并提供修改建议\n3.智能问答\n①支持编程问题的智能问答，涉及代码理解、Bug修复、优化建议等\n②关联多种知识库，快速理解项目需求并提供解决方案\n4.IDE特性\n①支持语法高亮、括号匹配、自动缩进、代码片段等基础功能\n②集成Git版本控制，支持与构建和脚本工具集成", url: "https://inscode.net/?u=csdn_2501_94703505&utm_source=refer_friend", tags: "代码工具" },
+{ category: "代码工具", name: "CodeGeeX", brief: "CodeGeeX是由清华大学KEG实验室与智谱AI联合研发的智能编程助手，支持中英双语混合编程。", functions: "1.代码生成与补全\n①根据自然语言注释自动生成所需代码，可生成完整的方法级函数\n②提供实时代码补全功能，支持单行和多行补全\n③函数重构：快速梳理代码逻辑，降低出错风险\n2.代码理解与审查\n①自动添加行级注释，可选中文或英文\n②解释选中代码的用途、作用和逻辑流程，提供改进建议\n③代码审查（Code Review）：对代码变更进行详细检查并提供优化建议\n3.跨语言与智能功能\n①支持Java/Python/C++等20+种语言的代码互译\n②自然语言转SQL：根据表结构和查询需求生成SQL语句\n③自动修复Bug、生成Commit Message完成Git提交\n4.智能问答与扩展\n①通过侧边栏智能问答，快速解答技术和代码问题\n②Code Interpreter支持批量处理文件、数据分析和可视化\n③支持接入本地API服务，满足安全、隐私、高效编码需求", url: "https://codegeex.cn/", tags: "代码工具" },
+{ category: "代码工具", name: "通义灵码", brief: "通义灵码（Lingma）是阿里云推出的AI原生开发环境工具，深度集成千问3大模型。", functions: "1.智能会话模式\n①智能问答模式：进行代码和知识问答，解决问题但不直接修改文件\n②文件编辑模式：精准修改代码，支持多文件修改和迭代\n③智能体模式：自主决策，使用工程检索、文件编辑、终端等工具，端到端完成编码任务\n2.代码生成与优化\n①提供行级/函数级实时代码续写和预测建议\n②自然语言转代码：根据描述自动生成对应功能代码\n③自动生成单元测试框架和测试用例\n④代码优化建议：提升代码质量和可读性\n3.工程感知与工具调用\n①自动感知工程框架、技术栈、代码结构等信息，无需手动添加上下文\n②支持十多种内置编程工具，包括文件读写、代码查询、错误排查等\n③支持MCP协议配置，集成魔搭MCP广场3000+工具\n4.智能体能力\n①自主执行命令：根据需要自动完成命令编写并运行终端\n②工程级变更：自主拆解任务，修改多个代码文件，支持迭代和快照回滚\n③记忆感知：基于大模型记忆能力，越用越懂个人和工程需求", url: "https://lingma.aliyun.com/lingma", tags: "代码工具" },
+{ category: "代码工具", name: "文心快码", brief: "文心快码（Baidu Comate）是百度基于文心大模型打造的全栈编程智能体，行业首个多模态、多智能体协同的AI IDE。", functions: "1.智能代码生成\n①支持自然语言描述生成Python、Java、Go等多语言代码\n②上下文感知补全：基于项目上下文提供精准代码建议\n③实时错误检测：在编码阶段提前发现逻辑和语法问题\n2.多模态与设计协同\n①设计稿转代码（F2C）：上传Figma设计稿或图片，生成高还原度前端代码\n②图片转代码：将图片中的界面转换为可运行代码\n③自然语言调整：预览选定元素后用自然语言进行页面调整\n3.智能体协同\n①内置十余种开发工具（文件检索、代码分析、代码编辑等）\n②支持MCP对接外部工具和数据\n③内置多智能体协同机制，不同智能体分工协作", url: "https://comate.baidu.com/zh?inviteCode=8vuoybpt", tags: "代码工具" },
+{ category: "代码工具", name: "码上飞", brief: "码上飞（CodeFlying）是国产L4级零代码AI开发平台，以“说中文，做应用”为核心理念。", functions: "1.自然语言生成应用\n①用户通过自然语言描述需求，平台自动完成从需求分析到部署的全流程\n②支持普通话、粤语及混合中英文的语音/文本输入\n③3-5分钟内生成可运行的小程序、APP、H5网页或管理系统\n2.AI智能开发框架\n①蜂群协同开发框架：多个智能体并行理解需求、架构规划、页面生成、数据结构等\n②智能组件编排：提供1200+预置行业组件，支持上下文感知推荐\n③一键发布为小程序、APP或网站形态\n3.语音对话式生成（打电话模式）\n①像打电话一样用语音表达想法，系统持续确认需求边界和约束\n②将产品经理与工程师之间的“需求对齐”压缩为一段自然对话\n③面向教师、门店、内容创作者等非技术人员零门槛快速开发", url: "https://www.codeflying.net/?utm=cg&cgv=09we2xkgo4", tags: "代码工具" },
+{ category: "代码工具", name: "Cursor", brief: "Cursor是AI原生IDE，以自研Composer模型和多智能体并行协作为核心特色。", functions: "1.代码生成与智能体\n①自研Composer模型：专为低延迟智能体式编码打造，30秒内完成多步骤任务，速度达250 tokens/秒\n②多智能体并行：同时运行最多8个AI助手，各自在独立环境中工作，并行处理不同子任务\n③支持智能体自主搜索代码库、读取编辑文件、执行终端命令\n2.交互开发\n①AI对话与代码辅助：自然语言交互完成编码、调试和优化\n②支持语音输入（动嘴写代码）\n③内置浏览器工具：让AI自行测试生成的代码", url: "https://cursor.com/cn", tags: "代码工具" },
+{ category: "代码工具", name: "Windsurf", brief: "Windsurf是领先的AI编程助手与IDE，由Codeium开发，被誉为“以智能体为中心”的IDE。", functions: "1.代码生成与补全\n①实时代码补全：根据输入给出单行或多行预测建议，按Tab键即可采纳\n②基于注释生成代码：根据自然语言注释自动生成对应代码函数\n③支持超过70种编程语言\n2.智能体（Cascade）\n①Cascade智能体可自主完成多文件重构、项目范围推理和代理编辑\n②Git工作树支持：同一仓库不同分支并行运行多个Cascade会话\n③上下文窗口指示器：实时查看当前上下文占用情况并预警\n3.多会话协同\n①多会话并行视图：分屏或标签页同时查看和操作多个Cascade会话\n②SWE-1.5模型已部署为默认模型，具备完整智能任务处理能力", url: "https://windsurf.com/", tags: "代码工具" },
+{ category: "代码工具", name: "GitHub Copilot", brief: "GitHub Copilot是GitHub与OpenAI联合开发的AI编程助手，是最早大规模落地的AI编程工具。", functions: "1.代码补全与生成\n①基于项目上下文提供精准的单行和多行代码补全建议\n②根据注释和函数签名自动生成完整代码\n③Next Edit Suggestions：智能识别代码优化机会，实时提出重构建议\n2.Agent智能体模式\n①独立将想法转化为代码，自动识别子任务并跨多文件执行\n②可处理复杂基础设施任务、建议终端命令、调用工具\n③能自行修复运行时错误\n3.多模型支持\n①新增多模型支持，可访问Claude 3.5/3.7 Sonnet、Gemini 2.0 Flash、OpenAI等模型\n②Pro版每月300次高级请求", url: "https://github.com/features/copilot", tags: "代码工具" },
+{ category: "代码工具", name: "C知道", brief: "C知道是CSDN推出的AI技术问答工具，接入DeepSeek-R1满血版大模型，具备“深度思考模式”。", functions: "1.深度思考模式\n①接入DeepSeek-R1满血版，植入深度思考模式\n②展现AI的完整思考路径，建立“思考脚手架”，将解题过程转化为可感知的思维路径\n③启发式引导技术人员思考，培养结构化解题能力\n2.技术问答\n①理解用户查询意图，针对计算机科学和软件开发问题提供专业答案\n②覆盖需求探索、代码修复、代码检查、多模态交互、API调用等技术问题\n③支持联网查询功能，获取实时技术信息\n3.代码辅助\n①代码生成：用户描述需求自动生成代码片段\n②错误追踪与调试：协助定位问题并提供调试方法\n③代码解读：为复杂代码段提供清晰解释\n④多语言支持：支持多种编程语言的代码转换", url: "https://ai.csdn.net/chat/", tags: "代码工具" },
+{ category: "代码工具", name: "Claude", brief: "Claude是由Anthropic开发的AI模型系列，以强大的编码、推理能力著称。", functions: "1.代码生成与编程\n①自主编码能力：在Claude Code中可连续编程长达30小时，全程输出高质量代码\n②代码执行：支持直接运行可执行代码，完成编程和自动化任务\n③新增检查点功能：自动保存工作进度，支持即时回滚到之前操作状态\n2.技能（Skills）功能\n①支持创建或加载技能包（包含指令、可执行脚本及相关资源）\n②Claude自动判断并调用相关技能，支持组合多个技能处理多步骤复杂任务\n③技能可在网页应用、Claude Code及开发者API等多个平台复用\n3.工具调用与记忆\n①工具搜索：智能体可动态发现并仅加载所需工具\n②上下文编辑和记忆工具：智能体可处理更长时间、更复杂的任务\n③支持从API端点和控制台创建、版本控制和管理技能\n4.多平台与扩展\n①提供原生VS Code扩展，优化终端界面\n②Claude谷歌浏览器扩展：可在浏览器内导航网页、填写表格、完成完整任务流\n③Claude Agent SDK开源，助开发者打造专属智能体\n④支持企业级部署和管理", url: "https://claude.ai/login", tags: "代码工具" },
+{ category: "代码工具", name: "CodeBuddy", brief: "CodeBuddy是腾讯云推出的AI辅助编程工具，提供IDE、插件和CLI三种形态，覆盖全场景需求。", functions: "1.多形态产品矩阵\n①CodeBuddy IDE：产设研一体工作台，主打“对话即编程”\n②CodeBuddy插件：即插即用，零成本融入现有IDE工作流\n③CodeBuddy Code（CLI）：AI命令行工具，支持自然语言驱动全流程开发\n2.全流程AI驱动\n①需求阶段：自然语言转结构化PRD文档\n②设计阶段：自然语言或手绘草图转高保真设计稿\n③开发阶段：Figma一键设计转代码，智能补全、错误修复、单元测试生成、代码审查\n3.智能体高级能力\n①支持Plan计划模式、ACP协议、开放SDK被集成\n②支持自定义Subagents、自定义指令和Hooks\n③提供Plugin插件市场，国内首款引入Skills的AI编程工具\n④基于隔离沙箱的安全代码执行环境\n4.多模型支持与生态集成\n①支持混元、DeepSeek、GLM-4.7、GPT 5.2 Codex等主流模型\n②内置BaaS服务集成（Supabase、腾讯云CloudBase）\n③一键部署到CloudStudio、EdgeOne Pages等平台\n④基于TDesign、MUI、Shadcn等组件库快速组装界面", url: "https://www.codebuddy.cn/ide/?fromSource=gwzcw.12290894.12290894.12290894&utm_medium=cpc&utm_id=gwzcw.12290894.12290894.12290894&msclkid=0fbd77da041817b494521e3135d4df13", tags: "代码工具" }
+];
+
+// 初始化页面
+let currentPage = 1;
+let pageSize = 20;
+let filteredData = [...toolsData];
+let activeCategory = "all";
+let searchKeyword = "";
+
+// 颜色映射：根据分类分配urgency色条颜色
+const categoryColors = {
+    '中文文献检索': 'blue', '英文文献检索': 'green', '专利检索': 'orange',
+    '文献阅读与管理': 'purple', '论文写作': 'pink', '论文查重查AI率': 'teal',
+    '论文降重降AI率': 'teal', '数据查找': 'purple', '翻译工具': 'green',
+    '科研绘图': 'orange', '代码开发': 'blue', '学术社交平台': 'pink',
+    'AI工具': 'purple'
+};
+
+function getCategoryOrder() {
+    try { return JSON.parse(localStorage.getItem('treasureCategoryOrder') || 'null'); } catch(e) { return null; }
+}
+function saveCategoryOrder(order) {
+    localStorage.setItem('treasureCategoryOrder', JSON.stringify(order));
+}
+
+function buildCategoryMenu() {
+    const defaultCategories = [...new Set(toolsData.map(t => t.category))];
+    const savedOrder = getCategoryOrder();
+    // 按保存的顺序排列，新增的分类放最后
+    let orderedCategories;
+    if (savedOrder && Array.isArray(savedOrder)) {
+        orderedCategories = savedOrder.filter(c => defaultCategories.includes(c));
+        // 把不在 savedOrder 里的新分类追加到末尾
+        defaultCategories.forEach(c => { if (!orderedCategories.includes(c)) orderedCategories.push(c); });
+    } else {
+        orderedCategories = defaultCategories;
+    }
+
+    const menu = document.getElementById('categoryMenu');
+    const counts = {};
+    defaultCategories.forEach(c => { counts[c] = toolsData.filter(t => t.category === c).length; });
+    const totalCount = toolsData.length;
+
+    let html = `<div class="f-opt active" data-category="all"><div class="f-opt-dot"></div>全部分类 <span style="margin-left:auto;font-size:11px;color:var(--text-muted);">${totalCount}</span></div>`;
+    orderedCategories.forEach((cat, idx) => {
+        html += `<div class="f-opt" data-category="${escapeHtml(cat)}" draggable="true" data-idx="${idx}"><div class="f-opt-dot"></div>${escapeHtml(cat)} <span class="f-opt-handle" title="拖拽排序">⠿</span><span style="font-size:11px;color:var(--text-muted);margin-left:4px;">${counts[cat]}</span></div>`;
+    });
+    menu.innerHTML = html;
+
+    // 绑定点击事件
+    menu.querySelectorAll('.f-opt').forEach(item => {
+        item.addEventListener('click', function(e) {
+            // 如果点在拖拽手柄上，不触发筛选
+            if (e.target.closest('.f-opt-handle')) return;
+            activeCategory = item.getAttribute('data-category');
+            menu.querySelectorAll('.f-opt').forEach(m => m.classList.remove('active'));
+            item.classList.add('active');
+            updateFilter();
+        });
+    });
+
+    // ── 拖拽排序 ──
+    let dragSrc = null;
+    menu.querySelectorAll('.f-opt[draggable]').forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            dragSrc = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', this.getAttribute('data-idx'));
+        });
+        item.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            menu.querySelectorAll('.f-opt').forEach(m => m.classList.remove('drag-over'));
+            dragSrc = null;
+        });
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            if (this !== dragSrc) this.classList.add('drag-over');
+        });
+        item.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over');
+        });
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            if (this === dragSrc) return;
+            const fromIdx = parseInt(dragSrc.getAttribute('data-idx'));
+            const toIdx = parseInt(this.getAttribute('data-idx'));
+            const moved = orderedCategories.splice(fromIdx, 1)[0];
+            orderedCategories.splice(toIdx, 0, moved);
+            saveCategoryOrder(orderedCategories);
+            // 保持当前选中状态
+            const prevActive = activeCategory;
+            buildCategoryMenu();
+            if (prevActive !== 'all') {
+                const el = menu.querySelector('[data-category="' + CSS.escape(prevActive) + '"]');
+                if (el) { el.classList.add('active'); activeCategory = prevActive; }
+            }
+        });
+    });
+
+    // 更新统计
+    document.getElementById('statTotal').textContent = totalCount;
+    document.getElementById('statCats').textContent = defaultCategories.length;
+}
+
+function updateFilter() {
+    let result = toolsData;
+    if(activeCategory !== "all") result = result.filter(t => t.category === activeCategory);
+    if(searchKeyword.trim() !== "") {
+        const kw = searchKeyword.toLowerCase();
+        result = result.filter(t => t.name.toLowerCase().includes(kw) || t.brief.toLowerCase().includes(kw) || (t.tags && t.tags.toLowerCase().includes(kw)));
+    }
+    filteredData = result;
+    currentPage = 1;
+    render();
+}
+
+function render() {
+    const start = (currentPage-1)*pageSize;
+    const pageData = filteredData.slice(start, start+pageSize);
+    const container = document.getElementById("toolsContainer");
+    const emptyDiv = document.getElementById("emptyMessage");
+    if(pageData.length === 0) {
+        container.innerHTML = "";
+        emptyDiv.style.display = "block";
+        document.getElementById("pagination").innerHTML = "";
+        return;
+    }
+    emptyDiv.style.display = "none";
+    container.innerHTML = pageData.map((tool, idx) => {
+        const colorCls = categoryColors[tool.category] || ['blue','green','orange','purple','teal','pink'][idx % 6];
+        return `
+        <div class="tool-card">
+            <div class="urgency-bar urgency-${colorCls}"></div>
+            <div class="card-header">
+                <div class="card-header-left">
+                    <div class="card-badges"><span class="badge">${escapeHtml(tool.category)}</span></div>
+                    <div class="tool-name">${escapeHtml(tool.name)}</div>
+                    <div class="tool-brief">${escapeHtml(tool.brief.length>120?tool.brief.substring(0,120)+'...':tool.brief)}</div>
+                </div>
+                <button class="fav-btn" id="fav-${idx}" data-name="${escapeHtml(tool.name)}" onclick="toggleFav('${escapeHtml(tool.name)}', this)"></button>
+            </div>
+            <div class="card-body">
+                <div class="tool-functions">${formatText(tool.functions)}</div>
+                <div class="tool-tags">${(tool.tags||"").split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join('')}</div>
+                <div class="tool-link"><a href="${escapeHtml(tool.url)}" target="_blank">🔗 ${tool.url.length>40?tool.url.substring(0,40)+'...':tool.url}</a></div>
+            </div>
+            <div class="card-footer">
+                <button class="btn-detail" data-name="${escapeHtml(tool.name)}" data-brief="${escapeHtml(tool.brief)}" data-func="${escapeHtml(tool.functions)}" data-url="${escapeHtml(tool.url)}" data-cat="${escapeHtml(tool.category)}" data-tags="${escapeHtml(tool.tags||'')}">查看详情</button>
+            </div>
+        </div>
+        `;
+    }).join('');
+    document.querySelectorAll('.btn-detail').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('modalTitle').innerText = btn.getAttribute('data-name');
+            document.getElementById('modalCategory').innerText = btn.getAttribute('data-cat');
+            document.getElementById('modalBrief').innerText = btn.getAttribute('data-brief');
+            document.getElementById('modalFunctions').innerHTML = formatText(btn.getAttribute('data-func'));
+            document.getElementById('modalTags').innerText = btn.getAttribute('data-tags');
+            const url = btn.getAttribute('data-url');
+            document.getElementById('modalUrl').href = url;
+            document.getElementById('modalUrl').innerText = url;
+            document.getElementById('detailModal').classList.add('active');
+        });
+    });
+    renderPagination();
+    updateFavBtns();
+}
+
+function renderPagination() {
+    const totalPages = Math.ceil(filteredData.length / pageSize);
+    const paginationDiv = document.getElementById("pagination");
+    if(totalPages <= 1) { paginationDiv.innerHTML = ""; return; }
+    let html = `<button class="page-btn" data-page="${currentPage-1}" ${currentPage===1?'disabled':''}>上一页</button>`;
+    for(let i=1;i<=totalPages && i<=7;i++) {
+        html += `<button class="page-btn ${i===currentPage?'active':''}" data-page="${i}">${i}</button>`;
+    }
+    html += `<button class="page-btn" data-page="${currentPage+1}" ${currentPage===totalPages?'disabled':''}>下一页</button>`;
+    paginationDiv.innerHTML = html;
+    document.querySelectorAll('.page-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const page = parseInt(btn.getAttribute('data-page'));
+            if(!isNaN(page) && page>=1 && page<=totalPages) {
+                currentPage = page;
+                render();
+                document.getElementById('toolsContainer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+}
+
+function formatText(text) {
+    if (!text) return '';
+    let h = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // 处理代码块（用反引号包裹的内容）
+    h = h.replace(/`([^`]+)`/g, '<span class="code">$1</span>');
+    // 处理高亮文本（用**包裹的内容）
+    h = h.replace(/\*\*([^*]+)\*\*/g, '<span class="highlight">$1</span>');
+
+    // 逐行处理
+    var lines = h.split('\n');
+    lines = lines.map(function(line) {
+        if (!line) return '';
+
+        // 一级标题：以 "数字." 开头，标题到冒号或行末为止
+        // 如 "1.文献检索"、"2. 查重查AI率（大雅相似度分析）"、"1.资源规模：外文文献..."
+        var m = line.match(/^(\d+\.\s*[^：:\n]+)([：:])?(.*)$/);
+        if (m) {
+            var title = '<strong>' + m[1] + '</strong>';
+            var rest = m[3] ? '<span class="func-text">' + m[3] + '</span>' : '';
+            return title + rest;
+        }
+
+        // 二级子项：带圈数字开头
+        // 如 "①一框式快速检索..."、"①Compound 数据库（化合物）"
+        if (/^[①-⑳]/.test(line)) {
+            return '<span class="func-sub-item">' + line + '</span>';
+        }
+
+        // 普通段落
+        return '<span class="func-text">' + line + '</span>';
+    });
+
+    return lines.join('<br>');
+}
+function resetCategory() { activeCategory = 'all'; buildCategoryMenu(); updateFilter(); }
+function escapeHtml(str) { if (!str) return ''; const div = document.createElement('div'); div.appendChild(document.createTextNode(str)); return div.innerHTML; }
+function closeModal() { document.getElementById('detailModal').classList.remove('active'); }
+
+let favs = JSON.parse(localStorage.getItem('treasureFavs') || '[]');
+
+// ── 统一收藏辅助函数 ──
+function addToResearchFavs(item) {
+    const all = JSON.parse(localStorage.getItem('research_favorites') || '[]');
+    if (!all.find(f => f.id === item.id)) {
+        all.push(item);
+        localStorage.setItem('research_favorites', JSON.stringify(all));
+    }
+}
+function removeFromResearchFavs(id) {
+    const all = JSON.parse(localStorage.getItem('research_favorites') || '[]');
+    localStorage.setItem('research_favorites', JSON.stringify(all.filter(f => f.id !== id)));
+}
+
+function toggleFav(name, btn) {
+    const idx = favs.indexOf(name);
+    const tool = toolsData.find(t => t.name === name);
+    if (idx > -1) {
+        favs.splice(idx, 1);
+        btn.classList.remove('on');
+        removeFromResearchFavs('treasure-' + name);
+        showToast('已取消收藏');
+    } else {
+        favs.push(name);
+        btn.classList.add('on');
+        if (tool) {
+            addToResearchFavs({
+                id: 'treasure-' + name,
+                category: 'treasure',
+                title: tool.name,
+                description: tool.brief ? tool.brief.substring(0, 100) : '',
+                meta: { cat: tool.category, url: tool.url },
+                tags: tool.tags ? tool.tags.split(',').map(t => t.trim()) : [],
+                favoritedAt: new Date().toISOString().split('T')[0]
+            });
+        }
+        showToast('已收藏');
+    }
+    localStorage.setItem('treasureFavs', JSON.stringify(favs));
+}
+function updateFavBtns() {
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+        const name = btn.getAttribute('data-name');
+        if (name && favs.includes(name)) {
+            btn.classList.add('on');
+        } else {
+            btn.classList.remove('on');
+        }
+    });
+}
+function showToast(msg) { 
+    const t = document.getElementById('toast'); 
+    t.textContent = msg; 
+    t.classList.add('show'); 
+    setTimeout(() => t.classList.remove('show'), 1500); 
+}
+
+document.getElementById('detailModal').addEventListener('click', function(e) { if(e.target === this) closeModal(); });
+document.getElementById('pageSizeSelect').addEventListener('change', (e) => { pageSize = parseInt(e.target.value); updateFilter(); });
+
+buildCategoryMenu();
+updateFilter();
+
+// ── 迁移旧收藏到统一存储 ──
+(function migrateTreasureFavs() {
+    var existing = JSON.parse(localStorage.getItem('research_favorites') || '[]');
+    var hasNew = false;
+    favs.forEach(function(name) {
+        var key = 'treasure-' + name;
+        if (existing.find(function(f) { return f.id === key; })) return;
+        var tool = toolsData.find(function(t) { return t.name === name; });
+        if (tool) {
+            existing.push({
+                id: key,
+                category: 'treasure',
+                title: tool.name,
+                description: tool.brief ? tool.brief.substring(0, 100) : '',
+                meta: { cat: tool.category, url: tool.url },
+                tags: tool.tags ? tool.tags.split(',').map(function(t) { return t.trim(); }) : [],
+                favoritedAt: new Date().toISOString().split('T')[0]
+            });
+            hasNew = true;
+        }
+    });
+    if (hasNew) { localStorage.setItem('research_favorites', JSON.stringify(existing)); }
+})();
+</script>
+<script>
+window.CHAT_CONTEXT = { title: "AI 科研工具顾问", welcome: "你好！我是 AI 科研工具顾问，可以帮你查找文献检索、论文查重、数据分析等科研工具。直接告诉我你的需求吧～", prompts: ["推荐中文文献检索工具", "有哪些论文查重工具？", "适合写论文的AI辅助工具有哪些？", "推荐免费的数据分析工具"], dataLabel: "科研工具", data: toolsData.map(function(t) { return { 名称: t.name, 类别: t.category, 简介: (t.brief || "").substring(0, 120), 标签: t.tags || "" }; }) };
+</script>
+<script src="chat-widget.js?v=2"></script>
+<div id="toast" class="toast"></div>
+</body>
+</html>

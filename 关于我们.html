@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于我们 - 研途</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2D5A7B;
+            --primary-light: #4A7A9B;
+            --primary-dark: #1E4060;
+            --secondary: #E8F0F5;
+            --accent: #E07B54;
+            --success: #5B9A6B;
+            --warning: #D4A84B;
+            --danger: #C75B5B;
+            --text-primary: #2C3E50;
+            --text-secondary: #6B7C8A;
+            --text-muted: #9CA3AF;
+            --bg-main: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --shadow-sm: 0 1px 3px rgba(45, 90, 123, 0.04);
+            --shadow-md: 0 2px 8px rgba(45, 90, 123, 0.06);
+            --shadow-lg: 0 4px 16px rgba(45, 90, 123, 0.08);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --mono: 'JetBrains Mono', monospace;
+            --serif: 'Noto Serif SC', serif;
+            --sans: 'Noto Sans SC', 'PingFang SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { background: var(--bg-main); color: var(--text-primary); font-family: var(--sans); overflow-x: hidden; }
+        ::selection { background: var(--primary); color: white; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 64px;
+            background: rgba(255,255,255,0.92); backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 28px; z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+        .navbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--serif); font-size: 20px; font-weight: 600;
+            color: var(--primary); text-decoration: none;
+        }
+        .navbar-logo svg { width: 30px; height: 30px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .navbar-nav { display: flex; align-items: center; gap: 6px; margin-left: 40px; }
+        .nav-link {
+            padding: 8px 18px; font-size: 14px; font-weight: 500;
+            color: var(--text-secondary); border-radius: 30px;
+            cursor: pointer; transition: var(--transition); text-decoration: none;
+        }
+        .nav-link:hover { background: var(--secondary); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
+        .navbar-right { margin-left: auto; }
+        .btn-cta {
+            padding: 10px 24px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white; border: none; border-radius: 30px; font-size: 14px; font-weight: 600;
+            cursor: pointer; transition: var(--transition); text-decoration: none; display: inline-block;
+        }
+        .btn-cta:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(45, 90, 123, 0.35); }
+
+        /* ═══ 顶部：左右分栏 ═══ */
+        .intro {
+            max-width: 1100px; margin: 120px auto 80px; padding: 0 28px;
+            display: flex; align-items: center; gap: 64px;
+        }
+        .intro-left { flex: 1; }
+        .intro-left .tag {
+            display: inline-block; padding: 4px 14px;
+            background: rgba(224,123,84,0.1); color: var(--accent);
+            border-radius: 30px; font-size: 12px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px;
+        }
+        .intro-left h1 {
+            font-family: var(--serif); font-size: 44px; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 20px; line-height: 1.3;
+        }
+        .intro-left h1 span { color: var(--accent); }
+        .intro-left p {
+            font-size: 16px; color: var(--text-secondary); line-height: 1.8; max-width: 480px;
+        }
+        .intro-right {
+            flex: 0 0 360px; display: flex; flex-direction: column; gap: 16px;
+        }
+        .intro-stat {
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg); padding: 24px; display: flex; align-items: center; gap: 16px;
+        }
+        .intro-stat .is-num {
+            font-family: var(--mono); font-size: 36px; font-weight: 600; color: var(--primary);
+            min-width: 80px;
+        }
+        .intro-stat .is-label { font-size: 14px; color: var(--text-secondary); }
+        .intro-stat .is-label strong { display: block; color: var(--text-primary); font-size: 15px; margin-bottom: 2px; }
+
+        /* ═══ 使命宣言：通栏大引号 ═══ */
+        .mission {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            padding: 72px 28px; text-align: center; color: white; position: relative; overflow: hidden;
+        }
+        .mission::before {
+            content: '"'; position: absolute; top: -40px; left: 50%; transform: translateX(-50%);
+            font-family: var(--serif); font-size: 240px; opacity: 0.06; line-height: 1;
+        }
+        .mission-inner { max-width: 680px; margin: 0 auto; position: relative; }
+        .mission-inner h2 {
+            font-family: var(--serif); font-size: 28px; font-weight: 600; line-height: 1.7; margin-bottom: 16px;
+        }
+        .mission-inner .author { font-size: 14px; opacity: 0.7; }
+
+        /* ═══ 左右交替区块 ═══ */
+        .alt-row {
+            max-width: 1100px; margin: 0 auto; padding: 72px 28px;
+            display: flex; align-items: center; gap: 64px;
+        }
+        .alt-row.reverse { flex-direction: row-reverse; }
+        .alt-visual {
+            flex: 0 0 320px; height: 220px;
+            background: var(--bg-card); border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .alt-visual-icon {
+            width: 80px; height: 80px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 20px; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 36px; box-shadow: 0 8px 24px rgba(45, 90, 123, 0.2);
+        }
+        .alt-text { flex: 1; }
+        .alt-text .label {
+            display: inline-block; padding: 3px 12px;
+            background: var(--secondary); color: var(--primary);
+            border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; margin-bottom: 12px;
+        }
+        .alt-text h3 {
+            font-family: var(--serif); font-size: 24px; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 14px;
+        }
+        .alt-text p {
+            font-size: 15px; color: var(--text-secondary); line-height: 1.8;
+        }
+
+        /* ═══ 设计原则卡片（横向滚动） ═══ */
+        .principles-wrap { background: var(--bg-card); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light); }
+        .principles {
+            max-width: 1100px; margin: 0 auto; padding: 64px 28px;
+        }
+        .principles h2 {
+            text-align: center; font-family: var(--serif); font-size: 26px; font-weight: 700;
+            color: var(--text-primary); margin-bottom: 40px;
+        }
+        .principle-list {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+            border: 1px solid var(--border-light); border-radius: var(--radius-lg); overflow: hidden;
+        }
+        .p-item {
+            padding: 36px 28px; background: var(--bg-card); text-align: center;
+            border-right: 1px solid var(--border-light);
+        }
+        .p-item:last-child { border-right: none; }
+        .p-item .p-num {
+            font-family: var(--mono); font-size: 48px; font-weight: 600;
+            color: var(--secondary); line-height: 1; margin-bottom: 16px;
+        }
+        .p-item h4 { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 8px; }
+        .p-item p { font-size: 13px; color: var(--text-secondary); line-height: 1.7; }
+
+/* ═══ CTA ═══ */
+        .cta-section {
+            text-align: center; padding: 72px 28px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+        .cta-section h2 {
+            font-family: var(--serif); font-size: 30px; font-weight: 700; margin-bottom: 12px;
+        }
+        .cta-section p { font-size: 15px; opacity: 0.85; margin-bottom: 28px; }
+        .btn-cta-lg {
+            padding: 14px 36px; background: white; color: var(--primary);
+            border: none; border-radius: 30px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: var(--transition); text-decoration: none;
+            display: inline-flex; align-items: center; gap: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+        .btn-cta-lg:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+
+        .footer { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; }
+
+        @media (max-width: 900px) {
+            .intro { flex-direction: column; gap: 40px; margin-top: 100px; }
+            .intro-right { flex: 1; flex-direction: row; flex-wrap: wrap; }
+            .intro-stat { flex: 1; min-width: 140px; }
+            .alt-row, .alt-row.reverse { flex-direction: column; gap: 32px; padding: 48px 20px; }
+            .alt-visual { flex: 0 0 160px; width: 100%; }
+            .principle-list { grid-template-columns: 1fr; }
+            .p-item { border-right: none; border-bottom: 1px solid var(--border-light); }
+            .p-item:last-child { border-bottom: none; }
+        }
+        @media (max-width: 480px) {
+            .intro-left h1 { font-size: 32px; }
+            .intro-right { flex-direction: column; }
+            .navbar-nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="navbar-logo">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"><path d="M16 3L3 9v14h26V9L16 3z"/><path d="M12 28V18h8v10"/><path d="M3 9l13 6 13-6"/></svg>
+            研途
+        </a>
+        <div class="navbar-nav">
+            <a href="功能介绍.html" class="nav-link">功能介绍</a>
+            <a href="关于我们.html" class="nav-link active">关于我们</a>
+        </div>
+        <div class="navbar-right">
+            <a href="index.html" class="btn-cta">立即体验</a>
+        </div>
+    </nav>
+
+    <!-- ═══ 顶部：左右分栏 ═══ -->
+    <section class="intro">
+        <div class="intro-left">
+            <div class="tag">About</div>
+            <h1>关于<span>研途</span></h1>
+            <p>研途是一个面向高校科研人员的个人科研管理平台，将学术工作中最常用的工具与信息整合到统一界面，帮助用户减少平台切换、专注于研究本身。</p>
+        </div>
+        <div class="intro-right">
+            <div class="intro-stat">
+                <div class="is-num">4</div>
+                <div class="is-label"><strong>核心模块</strong>工作台 · 宝藏库 · 竞赛 · 收藏</div>
+            </div>
+            <div class="intro-stat">
+                <div class="is-num">148</div>
+                <div class="is-label"><strong>竞赛条目</strong>覆盖 2024–2026 年度</div>
+            </div>
+            <div class="intro-stat">
+                <div class="is-num">200+</div>
+                <div class="is-label"><strong>工具资源</strong>多学科学术工具导航</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ 使命宣言 ═══ -->
+    <section class="mission">
+        <div class="mission-inner">
+            <h2>让科研更简单。将分散在多个平台的文献检索、竞赛查找、项目管理和笔记整理，整合到一个统一的界面中，减少信息孤岛带来的效率损耗。</h2>
+            <div class="author">—— 研途 · 实验数字档案馆</div>
+        </div>
+    </section>
+
+    <!-- ═══ 背景 ═══ -->
+    <section class="alt-row">
+        <div class="alt-visual">
+            <div class="alt-visual-icon"><i class="fas fa-bullseye"></i></div>
+        </div>
+        <div class="alt-text">
+            <div class="label">Background</div>
+            <h3>平台缘起</h3>
+            <p>在学术信息日益分散的当下，科研人员常常需要在多个平台之间来回切换——在知网查文献、翻教务处通知找竞赛、用本地文件夹管项目、靠浏览器书签存工具——信息孤岛让本应专注的研究时间被切割成碎片。研途的初衷，就是把这些高频需求收拢到一起，用一套简洁的工具链减少不必要的切换成本。</p>
+        </div>
+    </section>
+
+    <!-- ═══ 受众 ═══ -->
+    <section class="alt-row reverse">
+        <div class="alt-visual">
+            <div class="alt-visual-icon"><i class="fas fa-graduation-cap"></i></div>
+        </div>
+        <div class="alt-text">
+            <div class="label">Audience</div>
+            <h3>面向谁</h3>
+            <p>研途面向高校本科生、研究生及青年科研工作者。无论你是正在寻找竞赛机会、需要快速检索学术工具、还是想有条理地管理手头的项目与文献，都可以在这里找到对应的支持。平台不需要团队注册，没有组织层级，以个人为单位即可使用全部功能。</p>
+        </div>
+    </section>
+
+    <!-- ═══ 设计原则 ═══ -->
+    <div class="principles-wrap">
+        <div class="principles">
+            <h2>设计原则</h2>
+            <div class="principle-list">
+                <div class="p-item">
+                    <div class="p-num">01</div>
+                    <h4>克制</h4>
+                    <p>只做最必要的事，不贪求功能广度。每个决定都经过精简考量，让用户零门槛上手</p>
+                </div>
+                <div class="p-item">
+                    <div class="p-num">02</div>
+                    <h4>直接</h4>
+                    <p>操作路径尽可能短，信息层级尽可能扁平。减少点击深度，所见即所得</p>
+                </div>
+                <div class="p-item">
+                    <div class="p-num">03</div>
+                    <h4>可靠</h4>
+                    <p>不依赖第三方框架，技术栈精简可控。数据可导出、服务可自部署，保障学术数据的自主性</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- ═══ CTA ═══ -->
+    <section class="cta-section">
+        <h2>准备好开启你的科研新体验了吗？</h2>
+        <p>注册研途账号，解锁全部功能</p>
+        <a href="index.html" class="btn-cta-lg"><i class="fas fa-rocket"></i> 立即体验</a>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2026 研途 - 实验数字档案馆 | 让科研更简单</p>
+    </footer>
+</body>
+</html>

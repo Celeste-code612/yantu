@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>竞赛雷达 | 科研竞赛</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ── 与科研工作台完全一致的风格 ── */
+        :root {
+            --primary: #2D5A7B;
+            --primary-light: #4A7A9B;
+            --primary-dark: #1E4060;
+            --secondary: #E8F0F5;
+            --accent: #E07B54;
+            --success: #5B9A6B;
+            --warning: #D4A84B;
+            --danger: #C75B5B;
+            --text-primary: #2C3E50;
+            --text-secondary: #6B7C8A;
+            --text-muted: #9CA3AF;
+            --bg-main: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --bg-sidebar: #FFFFFF;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --shadow-sm: 0 1px 3px rgba(45, 90, 123, 0.04);
+            --shadow-md: 0 2px 8px rgba(45, 90, 123, 0.06);
+            --shadow-lg: 0 4px 16px rgba(45, 90, 123, 0.08);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --mono: 'JetBrains Mono', monospace;
+            --serif: 'Noto Serif SC', serif;
+            --sans: 'Noto Sans SC', 'PingFang SC', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg-main); color: var(--text-primary); font-family: var(--sans); overflow-x: hidden; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-main); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::selection { background: var(--primary); color: white; }
+
+        /* 顶部导航 (与工作台一致) */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 64px;
+            background: var(--bg-card); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 28px; z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+        .navbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--serif); font-size: 20px; font-weight: 600;
+            color: var(--primary); text-decoration: none;
+        }
+        .navbar-logo svg { width: 30px; height: 30px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .navbar-nav { display: flex; gap: 6px; margin-left: 40px; }
+        .nav-link {
+            padding: 8px 18px; font-size: 14px; font-weight: 500;
+            color: var(--text-secondary); border-radius: 30px;
+            cursor: pointer; transition: var(--transition); text-decoration: none;
+        }
+        .nav-link:hover { background: var(--secondary); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
+        .nav-search { margin-left: auto; margin-right: 12px; position: relative; }
+        .nav-search input {
+            background: var(--bg-main); border: 1px solid var(--border);
+            padding: 8px 12px 8px 34px; border-radius: 30px; font-size: 13px;
+            width: 220px; transition: var(--transition); outline: none;
+        }
+        .nav-search input:focus { width: 260px; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(45,90,123,0.1); }
+        .nav-search svg {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            width: 14px; height: 14px; color: var(--text-muted);
+        }
+
+        /* 主布局 */
+        .shell { padding-top: 64px; display: flex; height: 100vh; }
+        /* 左侧滤镜面板 */
+        .sidebar {
+            position: sticky; top: 64px; width: 260px; flex-shrink: 0;
+            height: calc(100vh - 64px); overflow-y: auto;
+            background: var(--bg-card); border-right: 1px solid var(--border);
+            padding: 24px 20px;
+        }
+        .filter-section { margin-bottom: 28px; }
+        .filter-title {
+            font-size: 11px; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px;
+        }
+        .filter-options { display: flex; flex-direction: column; gap: 4px; }
+        .f-opt {
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px; border-radius: var(--radius-md);
+            font-size: 13px; color: var(--text-secondary);
+            cursor: pointer; transition: var(--transition);
+        }
+        .f-opt:hover { background: var(--secondary); color: var(--primary); }
+        .f-opt.active { background: var(--secondary); color: var(--primary); font-weight: 500; }
+        .f-opt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted); }
+        .f-opt.active .f-opt-dot { background: var(--primary); }
+
+        .tag-cloud { display: flex; flex-wrap: wrap; gap: 8px; }
+        .tag-chip {
+            padding: 5px 12px; font-size: 11px; border-radius: 30px;
+            border: 1px solid var(--border); background: transparent;
+            color: var(--text-secondary); cursor: pointer; transition: var(--transition);
+        }
+        .tag-chip:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+        .tag-chip.on { background: var(--primary); color: white; border-color: var(--primary); }
+        .reset-btn {
+            width: 100%; padding: 10px; background: transparent;
+            border: 1px solid var(--border); border-radius: var(--radius-md);
+            font-size: 12px; cursor: pointer; transition: var(--transition);
+            margin-top: 20px; color: var(--text-secondary);
+        }
+        .reset-btn:hover { background: var(--secondary); border-color: var(--primary); color: var(--primary); }
+
+        /* 主内容区 */
+        .main { flex: 1; overflow-y: auto; padding: 0 28px 40px 28px; }
+
+        /* 英雄区域 */
+        .hero {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            padding: 24px 32px; margin: 24px 0 28px 0;
+            display: flex; align-items: center; gap: 32px;
+            border: 1px solid var(--border-light); box-shadow: var(--shadow-sm);
+        }
+        .radar-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+        .radar-ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(45, 90, 123, 0.15); }
+        .radar-ring:nth-child(2) { inset: 20px; border-color: rgba(45, 90, 123, 0.1); }
+        .radar-ring:nth-child(3) { inset: 40px; border-color: rgba(45, 90, 123, 0.06); }
+        .radar-cross {
+            position: absolute; inset: 0;
+            background: linear-gradient(transparent 50%, rgba(45,90,123,0.1) 50%),
+                        linear-gradient(90deg, transparent 50%, rgba(45,90,123,0.1) 50%);
+        }
+        .radar-sweep {
+            position: absolute; inset: 0; border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 300deg, rgba(45,90,123,0.05) 330deg, rgba(45,90,123,0.2) 360deg);
+            animation: sweep 3.5s linear infinite;
+        }
+        @keyframes sweep { to { transform: rotate(360deg); } }
+        .radar-dot { position: absolute; width: 5px; height: 5px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 5px var(--primary); }
+        .radar-dot:nth-child(4) { top: 22%; left: 58%; }
+        .radar-dot:nth-child(5) { top: 55%; left: 28%; }
+        .radar-dot:nth-child(6) { top: 70%; left: 68%; }
+        .hero-text { flex: 1; }
+        .hero-title { font-family: var(--serif); font-size: 28px; font-weight: 700; color: var(--text-primary); }
+        .hero-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 18px; }
+        .hero-stats { display: flex; gap: 32px; }
+        .stat-num { font-family: var(--mono); font-size: 26px; font-weight: 600; color: var(--primary); line-height: 1; }
+        .stat-label { font-size: 12px; color: var(--text-muted); }
+        .hero-arc { display: flex; gap: 20px; }
+        .arc-item { text-align: center; cursor: pointer; transition: opacity 0.2s; }
+        .arc-label { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+        /* 季度标签页 */
+        .season-tabs {
+            display: flex; gap: 8px; background: transparent;
+            margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 0;
+        }
+        .s-tab {
+            padding: 10px 20px; font-size: 14px; font-weight: 500;
+            color: var(--text-secondary); cursor: pointer;
+            border-bottom: 2px solid transparent; transition: var(--transition);
+        }
+        .s-tab:hover { color: var(--primary); }
+        .s-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+        .s-tab-count { background: var(--secondary); padding: 2px 8px; border-radius: 20px; font-size: 11px; margin-left: 8px; }
+
+        /* 工具栏 */
+        .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .sort-select { padding: 8px 24px 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--bg-card); font-size: 13px; cursor: pointer; }
+
+        /* 卡片网格 */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 24px; }
+        /* 竞赛卡片 */
+        .comp-card {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light); transition: var(--transition);
+            overflow: hidden; animation: fadeInUp 0.3s ease;
+        }
+        .comp-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border); }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .urgency-bar { height: 4px; width: 100%; }
+        .urgency-red { background: linear-gradient(90deg, #ef4444, #f87171); }
+        .urgency-amber { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .urgency-blue { background: linear-gradient(90deg, var(--primary-light), #60a5fa); }
+        .urgency-gray { background: linear-gradient(90deg, #cbd5e1, #e2e8f0); }
+        .urgency-purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+        .urgency-teal { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+        .urgency-pink { background: linear-gradient(90deg, #ec4899, #f472b6); }
+        .urgency-orange { background: linear-gradient(90deg, #f97316, #fb923c); }
+        .urgency-cyan { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+        .urgency-green { background: linear-gradient(90deg, #22c55e, #4ade80); }
+        .card-inner { padding: 18px 20px; }
+        .card-top { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .card-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .badge {
+            font-size: 11px; font-weight: 600; padding: 4px 12px;
+            border-radius: 30px; background: var(--secondary); color: var(--primary);
+            display: inline-flex; align-items: center; justify-content: center;
+            line-height: 1.4;
+        }
+        .badge-intl { background: #e9d5ff; color: #7c3aed; }
+        .badge-national { background: #dbeafe; color: #1e40af; }
+        .badge-school { background: #fff1f0; color: #dc2626; }
+        .badge-ruc { background: #fff0f0; color: #b91c1c; border: 1px solid #fecaca; }
+        .card-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px; }
+        .card-org { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; margin-bottom: 12px; }
+
+        /* 年份时间线样式 */
+        .years-timeline {
+            margin: 14px 0 8px 0;
+            border-top: 1px solid var(--border-light);
+            padding-top: 12px;
+        }
+        .year-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 0;
+            border-bottom: 1px dashed var(--border-light);
+            font-size: 12px;
+        }
+        .year-item:last-child { border-bottom: none; }
+        .year-badge {
+            font-weight: 700;
+            background: var(--secondary);
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            color: var(--primary);
+            min-width: 65px;
+            text-align: center;
+        }
+        .year-dates {
+            flex: 1;
+            margin-left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .deadline-link, .period-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border-bottom: 1px dotted transparent;
+        }
+        .deadline-link:hover, .period-link:hover {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        .year-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-right: 4px;
+        }
+        .ctags { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+        .ctag {
+            padding: 3px 10px; background: var(--secondary);
+            border-radius: 20px; font-size: 10px; color: var(--text-secondary);
+        }
+        .ctag-highlight { background: #e0f2fe; color: #0369a1; }
+        .card-footer {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: 12px; margin-top: 8px; border-top: 1px solid var(--border-light);
+        }
+        .fav-btn { 
+            background: transparent; border: none; cursor: pointer; color: var(--text-muted); 
+            transition: var(--transition); font-size: 0; width: 32px; height: 32px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .fav-btn::after { font-size: 20px; content: "☆"; color: var(--text-muted); }
+        .fav-btn.on::after { content: "★"; color: #f59e0b; }
+        .fav-btn:hover::after { color: #f59e0b; }
+        /* 季度标签颜色点 */
+        .s-tab[data-sem="spring"]::before { content: ""; display: inline-block; width: 8px; height: 8px; background: #f472b6; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .s-tab[data-sem="summer"]::before { content: ""; display: inline-block; width: 8px; height: 8px; background: #fbbf24; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .s-tab[data-sem="autumn"]::before { content: ""; display: inline-block; width: 8px; height: 8px; background: #fb923c; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .s-tab[data-sem="winter"]::before { content: ""; display: inline-block; width: 8px; height: 8px; background: #93c5fd; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .s-tab[data-sem="all"]::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+        .empty-state { text-align: center; padding: 60px; color: var(--text-muted); display: none; }
+        .toast {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            background: var(--primary); color: white; padding: 10px 24px;
+            border-radius: 40px; font-size: 13px; z-index: 2000;
+            opacity: 0; transition: 0.2s ease; pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast.show { opacity: 1; }
+        
+        /* ========== 手风琴展开式卡片样式 ========== */
+        .accordion-card {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .accordion-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        .accordion-card.expanded {
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .card-summary {
+            padding-bottom: 8px;
+        }
+        
+        .expand-hint {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 12px;
+            padding: 6px;
+            background: var(--secondary);
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+            user-select: none;
+        }
+        .expand-hint:hover {
+            background: #dbeafe;
+            color: var(--primary);
+        }
+        
+        .card-detail {
+            margin-top: 16px;
+            padding-top: 16px;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+                max-height: 0;
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                max-height: 1000px;
+            }
+        }
+        
+        .detail-divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--border), transparent);
+            margin-bottom: 16px;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--border-light);
+        }
+        .detail-item:last-of-type {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--primary);
+            min-width: 90px;
+            flex-shrink: 0;
+        }
+        
+        .detail-value {
+            font-size: 13px;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+        
+        .detail-footer {
+            margin-top: 16px;
+            padding: 12px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border-left: 3px solid var(--warning);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            color: #92400e;
+            text-align: center;
+        }
+        
+        .sem-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            background: #e0e7ff;
+            color: #3730a3;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
+        /* 时间线链接增强样式 */
+        .deadline-link, .period-link {
+            position: relative;
+            cursor: pointer !important;
+            transition: var(--transition);
+        }
+        .deadline-link:hover, .period-link:hover {
+            color: var(--primary) !important;
+            background: #e0f2fe;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
+        /* 搜索关键词高亮样式 */
+        mark.hl {
+            background: linear-gradient(120deg, #fef08a 0%, #fde047 100%);
+            color: inherit;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        /* ========== 赛程规划样式 ========== */
+        .planner-toggle {
+            margin-left: auto; padding: 10px 22px; font-size: 14px; font-weight: 600;
+            color: var(--primary); cursor: pointer; border: 2px dashed var(--border);
+            border-radius: 30px; background: transparent; transition: var(--transition); white-space: nowrap;
+        }
+        .planner-toggle:hover { border-color: var(--primary); background: var(--secondary); }
+        .planner-toggle.active { background: var(--primary); color: #fff; border-style: solid; border-color: var(--primary); }
+        .planner-back-btn {
+            margin-left: auto; padding: 10px 18px; font-size: 13px; font-weight: 500;
+            color: var(--text-secondary); cursor: pointer;
+            border: 1px solid var(--border); border-radius: 30px;
+            background: var(--bg-card); transition: var(--transition);
+            white-space: nowrap;
+        }
+        .planner-back-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+
+        .planner-view { display: none; flex-direction: column; gap: 24px; padding: 4px 0; }
+        .planner-view.show { display: flex; }
+        .list-view.hide { display: none; }
+
+        .planner-ai-btn {
+            margin-left: auto; padding: 9px 22px;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: #fff; border: none; border-radius: 30px; font-size: 14px;
+            font-weight: 600; cursor: pointer; transition: var(--transition);
+            white-space: nowrap; display: flex; align-items: center; gap: 6px;
+        }
+        .planner-ai-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(79,70,229,0.35); }
+        .planner-ai-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+        .planner-ai-btn .spinner {
+            display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .planner-ai-btn.loading .spinner { display: inline-block; }
+        .planner-ai-btn.loading .btn-text { display: none; }
+
+        /* === 操作按钮栏 === */
+        .planner-toolbar {
+            display: flex; gap: 10px; flex-wrap: wrap;
+        }
+        .planner-toolbar-btn {
+            padding: 8px 18px; border: 1px solid var(--border);
+            border-radius: 20px; font-size: 13px; cursor: pointer;
+            transition: var(--transition); background: var(--bg-card);
+            color: var(--text-secondary); display: flex; align-items: center; gap: 5px;
+        }
+        .planner-toolbar-btn:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+        .planner-toolbar-btn.danger { color: var(--danger); border-color: transparent; }
+        .planner-toolbar-btn.danger:hover { background: #fee2e2; border-color: #fecaca; }
+
+        /* === 空状态 === */
+        .planner-empty {
+            text-align: center; padding: 64px 24px; color: var(--text-muted);
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            border: 2px dashed var(--border);
+        }
+        .planner-empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .planner-empty-title { font-size: 17px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+        .planner-empty-desc { font-size: 13px; }
+
+        /* === 规划卡片 === */
+        .plan-card {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light); overflow: hidden;
+            transition: var(--transition); animation: fadeInUp 0.3s ease;
+        }
+        .plan-card:hover { box-shadow: var(--shadow-md); }
+
+        /* 卡片头部 */
+        .plan-card-header {
+            display: flex; align-items: center; gap: 14px;
+            padding: 16px 20px; cursor: pointer; user-select: none;
+            transition: background 0.15s;
+        }
+        .plan-card-header:hover { background: var(--bg-main); }
+        .plan-card-num {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--primary); color: #fff;
+            font-weight: 700; font-size: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .plan-card-info { flex: 1; min-width: 0; }
+        .plan-card-name { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .plan-card-meta { font-size: 12px; color: #444; margin-top: 3px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .plan-card-meta span { display: flex; align-items: center; gap: 3px; }
+        .plan-card-badges { display: flex; gap: 6px; flex-shrink: 0; }
+        .plan-card-phase-tag {
+            padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600;
+        }
+        .phase-tag-prepare { background: #dbeafe; color: #1e40af; }
+        .phase-tag-apply { background: #fef3c7; color: #92400e; }
+        .phase-tag-sprint { background: #fce7f3; color: #9b2c5b; }
+
+        .plan-card-actions-header { display: flex; gap: 2px; flex-shrink: 0; }
+        .plan-card-act-btn {
+            width: 30px; height: 30px; border-radius: 50%; border: none;
+            background: transparent; cursor: pointer; font-size: 13px;
+            color: var(--text-muted); display: flex; align-items: center;
+            justify-content: center; transition: var(--transition);
+        }
+        .plan-card-act-btn:hover { background: var(--secondary); color: var(--primary); }
+        .plan-card-act-btn.del:hover { background: #fee2e2; color: var(--danger); }
+        .plan-card-act-btn.ai {
+            width: auto; padding: 0 12px; border-radius: 15px; font-size: 11px;
+            border: 1px solid #c7d2fe; background: #eef2ff; color: #4f46e5;
+            margin-right: 6px;
+        }
+        .plan-card-act-btn.ai:hover { background: #e0e7ff; border-color: #818cf8; }
+        .plan-card-act-btn.ai:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .plan-card-expand-text {
+            font-size: 12px; color: var(--primary); cursor: pointer;
+            margin-left: 6px; user-select: none; flex-shrink: 0;
+            padding: 4px 8px; border-radius: 4px; transition: var(--transition);
+        }
+        .plan-card-expand-text:hover { background: var(--secondary); }
+        .plan-card-act-btn.txt {
+            width: auto; padding: 3px 8px; border-radius: 4px; font-size: 12px;
+            color: #555;
+        }
+        .plan-card-act-btn.txt:hover { background: var(--secondary); color: #222; }
+        .plan-card-act-btn.txt.del { color: #c75b5b; }
+        .plan-card-act-btn.txt.del:hover { background: #fee2e2; }
+
+        /* 卡片展开区 */
+        .plan-card-body { display: none; padding: 0 20px 16px 20px; border-top: 1px solid var(--border-light); }
+        .plan-card.expanded .plan-card-body { display: block; }
+
+        /* 进度条 */
+        .plan-progress-section { padding: 12px 0 8px 0; }
+        .plan-progress-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+        .plan-progress-bar-wrap { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+        .plan-progress-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #4ade80); border-radius: 3px; transition: width 0.4s ease; }
+
+        /* 阶段列表 */
+        .phase-list { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; }
+        .phase-row {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 12px; border-radius: 8px; transition: var(--transition);
+            border: 1px solid transparent;
+        }
+        .phase-row:hover { background: var(--bg-main); border-color: var(--border-light); }
+        .phase-row.done { opacity: 0.6; }
+        .phase-row.done .phase-title { text-decoration: line-through; }
+        .phase-checkbox {
+            width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+            border: 2px solid var(--border); cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition); font-size: 11px; color: transparent;
+        }
+        .phase-checkbox:hover { border-color: var(--success); }
+        .phase-row.done .phase-checkbox { background: var(--success); border-color: var(--success); color: #fff; }
+        .phase-content { flex: 1; min-width: 0; }
+        .phase-title { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+        .phase-meta { font-size: 11px; color: #555; margin-top: 1px; }
+        .phase-meta span { margin-right: 10px; }
+        .phase-desc { font-size: 12px; color: #333; margin-top: 4px; line-height: 1.4; }
+        .phase-mini-actions { display: flex; gap: 2px; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+        .phase-row:hover .phase-mini-actions { opacity: 1; }
+        .phase-mini-btn {
+            width: 26px; height: 26px; border-radius: 50%; border: none;
+            background: transparent; cursor: pointer; font-size: 11px;
+            color: var(--text-muted); display: flex; align-items: center;
+            justify-content: center; transition: var(--transition);
+        }
+        .phase-mini-btn:hover { background: var(--secondary); color: var(--primary); }
+        .phase-mini-btn.del:hover { background: #fee2e2; color: var(--danger); }
+
+        .add-phase-row {
+            margin-top: 4px; padding: 8px 12px; border: 1px dashed var(--border);
+            border-radius: 8px; cursor: pointer; text-align: center;
+            font-size: 12px; color: var(--text-muted); transition: var(--transition);
+        }
+        .add-phase-row:hover { border-color: var(--primary); color: var(--primary); background: var(--secondary); }
+
+        /* 阶段内联编辑 */
+        .phase-edit-inline { margin-top: 6px; padding: 10px; background: var(--bg-main); border-radius: 8px; display: none; }
+        .phase-edit-inline.show { display: flex; flex-direction: column; gap: 8px; }
+        .phase-edit-inline input, .phase-edit-inline textarea {
+            padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 12px; outline: none; font-family: inherit; background: #fff;
+        }
+        .phase-edit-inline input:focus, .phase-edit-inline textarea:focus { border-color: var(--primary); }
+        .phase-edit-inline textarea { resize: vertical; min-height: 40px; }
+        .phase-edit-row { display: flex; gap: 8px; }
+        .phase-edit-row input { flex: 1; }
+        .phase-edit-btns { display: flex; gap: 6px; justify-content: flex-end; }
+        .phase-edit-btns button {
+            padding: 5px 16px; border-radius: 20px; font-size: 12px; cursor: pointer;
+            border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text-secondary); transition: var(--transition);
+        }
+        .phase-edit-btns button.save { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+        /* === 弹窗样式 === */
+        .planner-modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            z-index: 10001; display: flex; align-items: center; justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .planner-modal {
+            background: var(--bg-card); border-radius: var(--radius-lg);
+            width: 520px; max-height: 70vh; display: flex; flex-direction: column;
+            box-shadow: var(--shadow-lg); animation: modalIn 0.25s ease;
+        }
+        @keyframes modalIn { from { opacity: 0; transform: translateY(-20px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .planner-modal-header {
+            padding: 16px 20px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+            font-weight: 600; font-size: 15px;
+        }
+        .planner-modal-close {
+            width: 30px; height: 30px; border-radius: 50%; border: none;
+            background: transparent; cursor: pointer; font-size: 18px;
+            color: var(--text-muted); transition: var(--transition);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .planner-modal-close:hover { background: var(--secondary); color: var(--text-primary); }
+        .planner-modal-search { padding: 12px 20px; border-bottom: 1px solid var(--border-light); }
+        .planner-modal-search input {
+            width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+            border-radius: 6px; font-size: 13px; outline: none; background: var(--bg-main);
+        }
+        .planner-modal-search input:focus { border-color: var(--primary); }
+        .planner-modal-list { flex: 1; overflow-y: auto; padding: 8px 0; }
+        .planner-modal-list .pick-item {
+            padding: 10px 20px; cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; justify-content: space-between; font-size: 13px;
+        }
+        .planner-modal-list .pick-item:hover { background: var(--secondary); }
+        .pick-name { font-weight: 500; color: var(--text-primary); }
+        .pick-info { font-size: 11px; color: var(--text-muted); }
+        .pick-add { color: var(--primary); font-size: 18px; font-weight: 700; }
+
+        /* 编辑弹窗 */
+        .edit-form { display: flex; flex-direction: column; gap: 12px; padding: 16px 20px; }
+        .edit-form label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+        .edit-form input, .edit-form textarea {
+            padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 13px; outline: none; background: var(--bg-main); font-family: inherit;
+        }
+        .edit-form input:focus, .edit-form textarea:focus { border-color: var(--primary); }
+        .edit-form textarea { resize: vertical; min-height: 60px; }
+        .edit-form-btns { display: flex; gap: 8px; justify-content: flex-end; }
+        .edit-form-btns button {
+            padding: 7px 20px; border-radius: 20px; font-size: 13px; cursor: pointer;
+            border: 1px solid var(--border); background: var(--bg-card);
+            color: var(--text-secondary); transition: var(--transition);
+        }
+        .edit-form-btns button.save { background: var(--primary); color: #fff; border-color: var(--primary); }
+        .edit-form-btns button.save:hover { background: var(--primary-dark); }
+        .edit-form-btns button:hover { background: var(--secondary); }
+    </style>
+
+</head>
+<body>
+<script>
+(function(){if(localStorage.getItem('isLoggedIn')!=='true'){window.location.href='index.html';}})();
+</script>
+<nav class="navbar">
+    <a class="navbar-logo" href="workspace.html">
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"><path d="M16 3L3 9v14h26V9L16 3z"/><path d="M12 28V18h8v10"/><path d="M3 9l13 6 13-6"/></svg>
+        研途
+    </a>
+    <div class="navbar-nav">
+        <a class="nav-link" href="workspace.html">工作台</a>
+        <a class="nav-link" href="treasure.html">科研宝藏库</a>
+        <a class="nav-link active" href="competition.html">竞赛雷达</a>
+        <a class="nav-link" href="favorites.html">我的收藏</a>
+    </div>
+    <div class="nav-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="globalSearch" placeholder="搜索竞赛、主办方...">
+    </div>
+    <button class="nav-logout-btn" onclick="if(localStorage.removeItem('isLoggedIn'),localStorage.removeItem('username'),1){fetch('/api/auth/logout/',{method:'POST'});window.location.href='index.html?logout=1';}" title="退出登录" style="padding:6px 14px;font-size:13px;font-weight:500;color:#6B7C8A;background:none;border:1px solid #E2E8F0;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>退出</span>
+    </button>
+</nav>
+
+<div class="shell">
+    <aside class="sidebar">
+        <div class="filter-section"><div class="filter-title">视角</div><div class="filter-options" id="viewFilter"><div class="f-opt active" data-val="all"><div class="f-opt-dot"></div>全部竞赛</div><div class="f-opt" data-val="ruc"><div class="f-opt-dot" style="background:#d97706"></div>人大专属</div></div></div>
+        <div class="filter-section"><div class="filter-title">级别</div><div class="filter-options" id="levelFilter"><div class="f-opt active" data-val="all"><div class="f-opt-dot"></div>全部</div><div class="f-opt" data-val="国际性"><div class="f-opt-dot"></div>国际性</div><div class="f-opt" data-val="全国性"><div class="f-opt-dot"></div>全国性</div><div class="f-opt" data-val="校级"><div class="f-opt-dot"></div>校级</div><div class="f-opt" data-val="院级"><div class="f-opt-dot"></div>院级</div></div></div>
+        <div class="filter-section"><div class="filter-title">📚 学科分类</div><div class="filter-options" id="subjectFilter"><div class="f-opt active" data-val="all"><div class="f-opt-dot"></div>全部</div><div class="f-opt" data-val="人文社科类"><div class="f-opt-dot"></div>人文社科类</div><div class="f-opt" data-val="理工农医类"><div class="f-opt-dot"></div>理工农医类</div><div class="f-opt" data-val="艺术体育类"><div class="f-opt-dot"></div>艺术体育类</div><div class="f-opt" data-val="综合类"><div class="f-opt-dot"></div>综合类</div></div></div>
+        <div class="filter-section"><div class="filter-title">📌 类型</div><div class="filter-options" id="typeFilter"><div class="f-opt active" data-val="all"><div class="f-opt-dot"></div>全部</div><div class="f-opt" data-val="学科竞赛"><div class="f-opt-dot"></div>学科竞赛</div><div class="f-opt" data-val="创新创业竞赛"><div class="f-opt-dot"></div>创新创业竞赛</div><div class="f-opt" data-val="征文写作竞赛"><div class="f-opt-dot"></div>征文写作竞赛</div><div class="f-opt" data-val="设计创意竞赛"><div class="f-opt-dot"></div>设计创意竞赛</div><div class="f-opt" data-val="技能实操竞赛"><div class="f-opt-dot"></div>技能实操竞赛</div><div class="f-opt" data-val="文体艺术竞赛"><div class="f-opt-dot"></div>文体艺术竞赛</div><div class="f-opt" data-val="案例分析竞赛"><div class="f-opt-dot"></div>案例分析竞赛</div><div class="f-opt" data-val="其他"><div class="f-opt-dot"></div>其他</div><div class="f-opt" data-val="会议论坛"><div class="f-opt-dot"></div>会议论坛</div></div></div>
+        <div class="filter-section"><div class="filter-title">标签筛选</div><div class="tag-cloud" id="tagCloud"><div class="tag-chip" data-tag="白名单">白名单</div><div class="tag-chip" data-tag="保研加分">保研加分</div><div class="tag-chip" data-tag="高获奖率">高获奖率</div><div class="tag-chip" data-tag="零门槛">零门槛</div><div class="tag-chip" data-tag="有奖金">有奖金</div><div class="tag-chip" data-tag="短周期">短周期</div><div class="tag-chip" data-tag="个人赛">个人赛</div><div class="tag-chip" data-tag="团队赛">团队赛</div><div class="tag-chip" data-tag="人大专属">人大专属</div><div class="tag-chip" data-tag="长周期">长周期</div><div class="tag-chip" data-tag="不接受个人报名">不接受个人报名</div></div></div>
+        <button class="reset-btn" id="resetAll">重置所有筛选</button>
+    </aside>
+
+    <div class="main">
+        <div class="hero">
+            <div class="radar-wrap"><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-cross"></div><div class="radar-sweep"></div><div class="radar-dot"></div><div class="radar-dot"></div><div class="radar-dot"></div></div>
+            <div class="hero-text"><div class="hero-title">竞赛雷达</div><div class="hero-sub">近三年信号追踪 · 年份直达链接</div><div class="hero-stats"><div class="stat-item"><div class="stat-num" id="statTotal">—</div><div class="stat-label">竞赛种类</div></div><div class="stat-item"><div class="stat-num" style="color:#ef4444" id="statUrgent">—</div><div class="stat-label">30天内截止</div></div><div class="stat-item"><div class="stat-num" style="color:#5B9A6B" id="statActive">—</div><div class="stat-label">进行中</div></div><div class="stat-item"><div class="stat-num" style="color:#d97706" id="statRuc">—</div><div class="stat-label">人大专属</div></div></div></div>
+            <div class="hero-arc" id="heroArc"></div>
+        </div>
+
+        <div class="season-tabs"><div class="s-tab active" data-sem="all">全部 <span class="s-tab-count" id="cnt-all">0</span></div><div class="s-tab" data-sem="spring">春季学期 <span class="s-tab-count" id="cnt-spring">0</span></div><div class="s-tab" data-sem="summer">暑假 <span class="s-tab-count" id="cnt-summer">0</span></div><div class="s-tab" data-sem="autumn">秋季学期 <span class="s-tab-count" id="cnt-autumn">0</span></div><div class="s-tab" data-sem="winter">寒假 <span class="s-tab-count" id="cnt-winter">0</span></div><button class="planner-toggle" id="plannerToggle" onclick="togglePlanner()">赛程规划</button><button class="planner-back-btn" id="plannerBackBtn" onclick="togglePlanner()" style="display:none;">返回竞赛列表</button></div>
+
+        <div class="list-view" id="listView">
+        <div class="toolbar"><div>已捕获 <strong id="showingCount">0</strong> 项竞赛</div><select id="sortSelect" class="sort-select"><option value="level">按级别排序</option><option value="name">按名称排序</option></select></div>
+        <div class="card-grid" id="cardGrid"></div>
+        <div class="empty-state" id="emptyState">📭 未检测到竞赛信号，试试调整筛选条件～</div>
+        </div>
+
+        <!-- 赛程规划视图 -->
+        <div class="planner-view" id="plannerView">
+            <div class="planner-toolbar">
+                <button class="planner-toolbar-btn" onclick="openCompPicker()">从竞赛库添加</button>
+                <button class="planner-toolbar-btn" onclick="openCustomForm()">自定义竞赛</button>
+                <button class="planner-toolbar-btn danger" onclick="clearPlan()">清空规划</button>
+            </div>
+
+            <div class="planner-timeline" id="plannerTimeline">
+                <div class="planner-empty" id="plannerEmpty">
+                    <div class="planner-empty-icon"></div>
+                    <div class="planner-empty-title">还没有规划任何竞赛</div>
+                    <div class="planner-empty-desc">先从竞赛库添加竞赛，再点 AI 详细规划</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="toast" id="toastMsg">已收藏</div>
+
+<!-- 引入从Excel自动生成的完整竞赛数据（包含形式、面向对象等所有字段） -->
+<script src="competition_data.js"></script>
+<script>
+    // ----------------------------- 竞赛数据处理逻辑 ---------------------------------
+    // 数据已从 competition_data.js 加载（包含format、object等新增字段）
+
+    // 聚合竞赛，每个竞赛包含years数组
+    const groupedCompetitions = RAW_DATA.map((item, idx) => ({ id: idx+1, ...item }));
+
+    // ========== 搜索增强功能 ==========
+    // 竞赛领域常见缩写和别名映射
+    const SEARCH_ALIAS_MAP = {
+        // 竞赛名称缩写
+        '数模': ['数学建模'],
+        '电设': ['电子设计', '电子设计竞赛'],
+        '大创': ['创新创业', '大学生创新创业'],
+        '大英': ['英语', '大学生英语'],
+        '互联网+': ['互联网+'],
+        '互联网加': ['互联网+'],
+        '挑战杯': ['挑战杯'],
+        
+        // 学科缩写
+        'CS': ['计算机'],
+        'AI': ['人工智能', '智能'],
+        '数学': ['数学', '数模', '建模'],
+        '编程': ['程序设计', '编程'],
+        '代码': ['程序设计', '编程'],
+        
+        // 特征词
+        '保研': ['保研加分', '白名单'],
+        '奖金': ['有奖金'],
+        '个人': ['个人赛'],
+        '团队': ['团队赛'],
+        '零门槛': ['零门槛'],
+        '短周期': ['短周期'],
+        '长周期': ['长周期'],
+        
+        // 常见变体
+        '设计': ['设计创意', '设计竞赛'],
+        '创新': ['创新创业', '创新竞赛'],
+        '创业': ['创新创业', '创业竞赛'],
+        '征文': ['征文写作', '征文竞赛'],
+        '写作': ['征文写作', '写作竞赛'],
+        '案例': ['案例分析', '案例竞赛'],
+    };
+
+    // 展开搜索查询词（支持别名）
+    function expandSearchQuery(query) {
+        let expandedTerms = [query];
+        
+        // 检查是否匹配别名映射
+        for (let [alias, expansions] of Object.entries(SEARCH_ALIAS_MAP)) {
+            // 如果查询词包含别名，或者别名包含查询词
+            if (query.includes(alias) || alias.includes(query)) {
+                expandedTerms.push(...expansions);
+            }
+        }
+        
+        // 去重并返回
+        return [...new Set(expandedTerms)];
+    }
+
+    // 高亮文本中的关键词
+    function highlightText(text, keywords) {
+        if (!text || !keywords || keywords.length === 0) return text;
+        
+        let result = text;
+        // 对每个关键词进行高亮（按长度降序，避免短词先匹配破坏长词）
+        const sortedKeywords = [...keywords].sort((a, b) => b.length - a.length);
+        
+        for (let keyword of sortedKeywords) {
+            if (!keyword) continue;
+            const regex = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
+            result = result.replace(regex, '<mark class="hl">$1</mark>');
+        }
+        
+        return result;
+    }
+
+    // 转义正则表达式特殊字符
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // 获取当前搜索关键词列表（用于高亮）
+    function getCurrentSearchTerms() {
+        if (!state.search) return [];
+        return expandSearchQuery(state.search.toLowerCase());
+    }
+
+    // 辅助函数
+    const TODAY = new Date('2026-05-16');
+    function daysLeft(dateStr) { if(!dateStr) return null; return Math.ceil((new Date(dateStr) - TODAY)/(86400000)); }
+
+    function getOverallUrgencyClass(comp) {
+        let minDays = Infinity;
+        for(let y of comp.years) {
+            let d = daysLeft(y.deadlineDate);
+            if(d !== null && d >= 0 && d < minDays) minDays = d;
+        }
+        if(minDays === Infinity) return 'gray';
+        if(minDays <= 14) return 'red';
+        if(minDays <= 45) return 'amber';
+        return 'blue';
+    }
+
+    // 状态管理
+    let state = { view:'all', level:'all', subject:'all', type:'all', semester:'all', tags:new Set(), search:'', sort:'level' };
+    let favs = new Set(JSON.parse(localStorage.getItem('radarFavs') || '[]'));
+
+    function matchesCompetition(comp) {
+        if(state.view === 'ruc' && !comp.ruc) return false;
+        if(state.level !== 'all' && comp.level !== state.level) return false;
+        if(state.subject !== 'all' && comp.subject !== state.subject) return false;
+        if(state.type !== 'all' && !comp.type.includes(state.type)) return false;
+        if(state.tags.size > 0) {
+            for(let t of state.tags) if(!comp.tags.includes(t)) return false;
+        }
+        
+        // 增强搜索：扩大搜索范围 + 别名支持
+        if(state.search) {
+            const searchLower = state.search.toLowerCase();
+            // 获取展开的搜索词列表
+            const searchTerms = expandSearchQuery(searchLower);
+            
+            // 构建可搜索的文本（包含所有相关字段）
+            const searchableText = [
+                comp.name || '',
+                comp.org || '',
+                comp.type || '',
+                comp.subject || '',
+                comp.format || '',
+                comp.object || '',
+                ...(comp.tags || [])
+            ].join(' ').toLowerCase();
+            
+            // 检查任一展开词是否匹配
+            const matches = searchTerms.some(term => searchableText.includes(term));
+            if (!matches) return false;
+        }
+        
+        // 学期筛选：竞赛任意一年包含该学期即可
+        if(state.semester !== 'all') {
+            let hasSem = comp.years.some(y => y.sems.includes(state.semester));
+            if(!hasSem) return false;
+        }
+        return true;
+    }
+
+    function getSortedFiltered() {
+        let filtered = groupedCompetitions.filter(matchesCompetition);
+        if(state.sort === 'level') {
+            const lvl = {国际性:1,全国性:2,校级:3};
+            filtered.sort((a,b) => (lvl[a.level]||4) - (lvl[b.level]||4));
+        } else {
+            filtered.sort((a,b) => a.name.localeCompare(b.name,'zh'));
+        }
+        return filtered;
+    }
+
+    // 渲染单个竞赛卡片 (手风琴展开式 - 两层结构)
+    function buildCard(comp, idx) {
+        const isFav = favs.has(comp.id);
+        // 交替颜色：根据索引选择不同的颜色
+        const colors = ['purple', 'teal', 'pink', 'orange', 'cyan', 'green'];
+        const colorCls = colors[idx % colors.length];
+        const levelBadge = comp.level==='国际性'?'badge-intl':(comp.level==='全国性'?'badge-national':'badge-school');
+        
+        // 获取当前搜索词用于高亮
+        const searchTerms = getCurrentSearchTerms();
+        
+        // 对标签添加高亮
+        const tagHtml = comp.tags.map(t => {
+            const highlightedTag = highlightText(t, searchTerms);
+            return `<span class="ctag ${t==='保研加分'||t==='白名单'?'ctag-highlight':''}">${highlightedTag}</span>`;
+        }).join('');
+        
+        // 按年份降序排列（使用字段名：deadlineStr, period, sem）
+        const sortedYears = [...comp.years].sort((a,b) => b.year - a.year);
+        
+        // 构建详情区的时间线HTML（带链接图标和悬停提示）
+        const yearsHtml = sortedYears.map(y => {
+            const deadlineDisplay = y.deadlineStr || '待公布';
+            const timeDisplay = y.period || '待公布';
+            const semDisplay = y.sem || '';
+            const linkUrl = y.link || '#';
+            
+            return `
+                <div class="year-item">
+                    <span class="year-badge">${y.year}年</span>
+                    <div class="year-dates">
+                        <span class="deadline-link" title="点击查看官方通知" onclick="event.stopPropagation(); window.open('${linkUrl}', '_blank')">
+                            截止: ${deadlineDisplay}
+                        </span>
+                        <span class="period-link" title="点击查看官方通知" onclick="event.stopPropagation(); window.open('${linkUrl}', '_blank')">
+                            举办: ${timeDisplay}
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // 手风琴卡片结构：
+        // 第一层：概览区（始终可见）- 名称、级别、类型、形式、学科、标签
+        // 第二层：详情区（点击展开）- 主办方、面向对象、年份时间线、链接提示
+        
+        // 对需要高亮的字段进行处理
+        const highlightedName = highlightText(comp.name, searchTerms);
+        const highlightedSubject = highlightText(comp.subject, searchTerms);
+        const highlightedType = highlightText(comp.type, searchTerms);
+        const highlightedFormat = highlightText(comp.format || '待补充', searchTerms);
+        const highlightedOrg = highlightText(comp.org, searchTerms);
+        const highlightedObject = highlightText(comp.object || '待补充', searchTerms);
+        
+        return `
+            <div class="comp-card accordion-card" onclick="toggleAccordion(this)">
+                <div class="urgency-bar urgency-${colorCls}"></div>
+                <div class="card-inner">
+                    <!-- 第一层：概览区 -->
+                    <div class="card-summary">
+                        <div class="card-top">
+                            <div class="card-badges">
+                                <span class="badge ${levelBadge}">${comp.level}</span>
+                                ${comp.ruc?'<span class="badge badge-ruc">人大专属</span>':''}
+                            </div>
+                            <button class="fav-btn ${isFav?'on':''}" onclick="event.stopPropagation(); toggleFav(${comp.id},this)"></button>
+                        </div>
+                        <div class="card-title">${highlightedName}</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:6px;">
+                            ${highlightedSubject} · ${highlightedType}
+                        </div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;">
+                            形式: ${highlightedFormat}
+                        </div>
+                        <div class="ctags">${tagHtml}</div>
+                        
+                        <!-- 展开提示 -->
+                        <div class="expand-hint">▼ 点击查看详细信息</div>
+                    </div>
+                    
+                    <!-- 第二层：详情区（默认隐藏） -->
+                    <div class="card-detail" style="display:none;">
+                        <div class="detail-divider"></div>
+                        
+                        <!-- 主办方 -->
+                        <div class="detail-item">
+                            <span class="detail-label">🏛️ 主办方</span>
+                            <span class="detail-value">${highlightedOrg}</span>
+                        </div>
+                        
+                        <!-- 面向对象 -->
+                        <div class="detail-item">
+                            <span class="detail-label">面向对象</span>
+                            <span class="detail-value">${highlightedObject}</span>
+                        </div>
+                        
+                        <!-- 年份时间线 -->
+                        <div class="years-timeline">${yearsHtml}</div>
+                        
+                        <!-- 链接提示 -->
+                        <div class="detail-footer">
+                            点击时间线中的链接图标可直达官方通知页面
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // 手风琴展开/收起功能
+    function toggleAccordion(cardElement) {
+        const detailSection = cardElement.querySelector('.card-detail');
+        const expandHint = cardElement.querySelector('.expand-hint');
+        
+        if (detailSection.style.display === 'none') {
+            // 展开
+            detailSection.style.display = 'block';
+            expandHint.innerHTML = '▲ 收起详细信息';
+            cardElement.classList.add('expanded');
+            
+            // 添加展开动画
+            detailSection.style.animation = 'slideDown 0.3s ease-out';
+        } else {
+            // 收起
+            detailSection.style.display = 'none';
+            expandHint.innerHTML = '▼ 点击查看详细信息';
+            cardElement.classList.remove('expanded');
+        }
+    }
+
+    function render() {
+        const filtered = getSortedFiltered();
+        document.getElementById('showingCount').innerText = filtered.length;
+        document.getElementById('emptyState').style.display = filtered.length ? 'none' : 'block';
+        updateCounts();
+        updateStats();
+        const grid = document.getElementById('cardGrid');
+        grid.innerHTML = filtered.map((c, idx) => buildCard(c, idx)).join('');
+    }
+
+    function updateStats() {
+        document.getElementById('statTotal').innerText = groupedCompetitions.length;
+        // 30天内截止: 存在任意年份 deadlineDate 在0～30天
+        let urgentCount = groupedCompetitions.filter(comp => comp.years.some(y => { let d = daysLeft(y.deadlineDate); return d !== null && d >= 0 && d <= 30; })).length;
+        document.getElementById('statUrgent').innerText = urgentCount;
+        // 进行中: 存在任意年份未截止或 ongoing (deadlineDate为null或未来)
+        let activeCount = groupedCompetitions.filter(comp => comp.years.some(y => y.deadlineDate === null || daysLeft(y.deadlineDate) >= 0)).length;
+        document.getElementById('statActive').innerText = activeCount;
+        document.getElementById('statRuc').innerText = groupedCompetitions.filter(c => c.ruc).length;
+    }
+
+    function updateCounts() {
+        const sems = ['all','spring','summer','autumn','winter'];
+        sems.forEach(sem => {
+            let cnt = groupedCompetitions.filter(comp => {
+                if(!matchesCompetition(comp)) return false;
+                if(sem === 'all') return true;
+                return comp.years.some(y => y.sems.includes(sem));
+            }).length;
+            document.getElementById(`cnt-${sem}`).innerText = cnt;
+        });
+    }
+
+    // ── 统一收藏辅助函数 ──
+    function addToResearchFavs(item) {
+        const all = JSON.parse(localStorage.getItem('research_favorites') || '[]');
+        if (!all.find(f => f.id === item.id)) {
+            all.push(item);
+            localStorage.setItem('research_favorites', JSON.stringify(all));
+        }
+    }
+    function removeFromResearchFavs(id) {
+        const all = JSON.parse(localStorage.getItem('research_favorites') || '[]');
+        localStorage.setItem('research_favorites', JSON.stringify(all.filter(f => f.id !== id)));
+    }
+
+    function toggleFav(id, btn) {
+        const comp = groupedCompetitions.find(c => c.id === id);
+        if(favs.has(id)) {
+            favs.delete(id); btn.classList.remove('on');
+            removeFromResearchFavs('comp-' + id);
+            toast('已取消收藏');
+        } else {
+            favs.add(id); btn.classList.add('on');
+            if (comp) {
+                addToResearchFavs({
+                    id: 'comp-' + id,
+                    category: 'competition',
+                    title: comp.name,
+                    description: comp.org + ' · ' + comp.level + ' · ' + comp.type,
+                    meta: { level: comp.level, subject: comp.subject },
+                    tags: comp.tags || [],
+                    favoritedAt: new Date().toISOString().split('T')[0]
+                });
+            }
+            toast('已收藏');
+        }
+        localStorage.setItem('radarFavs', JSON.stringify([...favs]));
+    }
+    function toast(msg) { const t=document.getElementById('toastMsg'); t.innerText=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2000); }
+
+    // 绑定事件
+    function bindFilters() {
+        document.querySelectorAll('#viewFilter .f-opt').forEach(el=>el.addEventListener('click',function(){ document.querySelectorAll('#viewFilter .f-opt').forEach(e=>e.classList.remove('active')); this.classList.add('active'); state.view=this.dataset.val; render(); }));
+        document.querySelectorAll('#levelFilter .f-opt').forEach(el=>el.addEventListener('click',function(){ document.querySelectorAll('#levelFilter .f-opt').forEach(e=>e.classList.remove('active')); this.classList.add('active'); state.level=this.dataset.val; render(); }));
+        document.querySelectorAll('#subjectFilter .f-opt').forEach(el=>el.addEventListener('click',function(){ document.querySelectorAll('#subjectFilter .f-opt').forEach(e=>e.classList.remove('active')); this.classList.add('active'); state.subject=this.dataset.val; render(); }));
+        document.querySelectorAll('#typeFilter .f-opt').forEach(el=>el.addEventListener('click',function(){ document.querySelectorAll('#typeFilter .f-opt').forEach(e=>e.classList.remove('active')); this.classList.add('active'); state.type=this.dataset.val; render(); }));
+        document.querySelectorAll('.s-tab').forEach(tab=>tab.addEventListener('click',function(){ document.querySelectorAll('.s-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); state.semester=this.dataset.sem; render(); }));
+        document.querySelectorAll('.tag-chip').forEach(chip=>chip.addEventListener('click',function(){ let tag=this.dataset.tag; if(state.tags.has(tag)){ state.tags.delete(tag); this.classList.remove('on'); } else { state.tags.add(tag); this.classList.add('on'); } render(); }));
+        document.getElementById('sortSelect').addEventListener('change',e=>{ state.sort=e.target.value; render(); });
+        document.getElementById('globalSearch').addEventListener('input',e=>{ state.search=e.target.value.trim(); render(); });
+        document.getElementById('resetAll').addEventListener('click',()=>{
+            state = { view:'all', level:'all', subject:'all', type:'all', semester:'all', tags:new Set(), search:'', sort:'level' };
+            document.querySelectorAll('#viewFilter .f-opt').forEach((el,i)=>i===0?el.classList.add('active'):el.classList.remove('active'));
+            document.querySelectorAll('#levelFilter .f-opt').forEach((el,i)=>i===0?el.classList.add('active'):el.classList.remove('active'));
+            document.querySelectorAll('#subjectFilter .f-opt').forEach((el,i)=>i===0?el.classList.add('active'):el.classList.remove('active'));
+            document.querySelectorAll('#typeFilter .f-opt').forEach((el,i)=>i===0?el.classList.add('active'):el.classList.remove('active'));
+            document.querySelectorAll('.s-tab').forEach((el,i)=>i===0?el.classList.add('active'):el.classList.remove('active'));
+            document.querySelectorAll('.tag-chip').forEach(c=>c.classList.remove('on'));
+            document.getElementById('globalSearch').value='';
+            render();
+        });
+    }
+
+    function buildHeroArcs() {
+        const wrap = document.getElementById('heroArc');
+        const seasons = [{label:'春季',sem:'spring',color:'#f472b6'},{label:'暑假',sem:'summer',color:'#fbbf24'},{label:'秋季',sem:'autumn',color:'#fb923c'},{label:'寒假',sem:'winter',color:'#93c5fd'}];
+        seasons.forEach(s=>{
+            const cnt = groupedCompetitions.filter(comp => comp.years.some(y => y.sems.includes(s.sem))).length;
+            wrap.innerHTML += `<div class="arc-item" onclick="document.querySelector('.s-tab[data-sem=\'${s.sem}\']').click();"><svg width="46" height="46" viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="none" stroke="#e2e8f0" stroke-width="3"/><circle cx="23" cy="23" r="18" fill="none" stroke="${s.color}" stroke-width="3" stroke-dasharray="${Math.min((cnt/groupedCompetitions.length)*113,110)} 113" stroke-linecap="round"/><text x="23" y="28" text-anchor="middle" font-size="12" font-weight="600" fill="${s.color}">${cnt}</text></svg><div class="arc-label">${s.label}</div></div>`;
+        });
+    }
+
+    // ── 迁移旧收藏到统一存储 ──
+    function migrateRadarFavs() {
+        const existing = JSON.parse(localStorage.getItem('research_favorites') || '[]');
+        let hasNew = false;
+        [...favs].forEach(function(compId) {
+            const key = 'comp-' + compId;
+            if (existing.find(function(f) { return f.id === key; })) return;
+            const comp = groupedCompetitions.find(function(c) { return c.id === compId; });
+            if (comp) {
+                existing.push({
+                    id: key,
+                    category: 'competition',
+                    title: comp.name,
+                    description: (comp.org || '') + ' · ' + (comp.level || '') + ' · ' + (comp.type || ''),
+                    meta: { level: comp.level, subject: comp.subject },
+                    tags: comp.tags || [],
+                    favoritedAt: new Date().toISOString().split('T')[0]
+                });
+                hasNew = true;
+            }
+        });
+        if (hasNew) { localStorage.setItem('research_favorites', JSON.stringify(existing)); }
+    }
+    migrateRadarFavs();
+
+    bindFilters();
+    buildHeroArcs();
+    render();
+
+    // 如果从工作台跳转过来，自动打开赛程规划
+    if (window.location.hash === '#planner') {
+        setTimeout(function() { togglePlanner(); }, 200);
+    }
+
+    // ==================== 赛程规划逻辑 ====================
+    var STORAGE_KEY = 'competitionPlan';
+    var planData = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    var planEditingId = null;
+    var editingPhaseItemId = null;
+    var editingPhaseId = null;
+
+    function savePlan() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(planData));
+        renderPlanner();
+    }
+
+    function genId() {
+        return 'plan_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+    }
+
+    function getPhase(deadlineDate) {
+        if (!deadlineDate) return 'prepare';
+        var d = Math.ceil((new Date(deadlineDate) - TODAY) / 86400000);
+        if (d < 0) return 'sprint';
+        if (d <= 14) return 'sprint';
+        if (d <= 45) return 'apply';
+        return 'prepare';
+    }
+
+    function phaseLabel(phase) {
+        var map = { prepare: '准备中', apply: '报名中', sprint: '冲刺中' };
+        return map[phase] || '准备中';
+    }
+
+    function phaseClass(phase) {
+        var map = { prepare: 'phase-prepare', apply: 'phase-apply', sprint: 'phase-sprint' };
+        return map[phase] || 'phase-prepare';
+    }
+
+    function togglePlanner() {
+        var btn = document.getElementById('plannerToggle');
+        var backBtn = document.getElementById('plannerBackBtn');
+        var plannerView = document.getElementById('plannerView');
+        var listView = document.getElementById('listView');
+        var sidebar = document.querySelector('.sidebar');
+        var hero = document.querySelector('.hero');
+        var showing = plannerView.classList.contains('show');
+        if (showing) {
+            plannerView.classList.remove('show');
+            listView.classList.remove('hide');
+            btn.classList.remove('active');
+            btn.style.display = '';
+            if (backBtn) backBtn.style.display = 'none';
+            if (sidebar) sidebar.style.display = '';
+            if (hero) hero.style.display = '';
+        } else {
+            plannerView.classList.add('show');
+            listView.classList.add('hide');
+            btn.classList.add('active');
+            btn.style.display = 'none';
+            if (backBtn) backBtn.style.display = '';
+            if (sidebar) sidebar.style.display = 'none';
+            if (hero) hero.style.display = 'none';
+            renderPlanner();
+        }
+    }
+
+    // ── 计算进度 ──
+    function calcProgress(phases) {
+        if (!phases || !phases.length) return 0;
+        var done = phases.filter(function(p) { return p.done; }).length;
+        return Math.round(done / phases.length * 100);
+    }
+
+    // ── 渲染规划列表 (可展开，显示阶段) ──
+    function renderPlanner() {
+        var timeline = document.getElementById('plannerTimeline');
+        // 清除旧卡片（保留 empty 占位）
+        var cards = timeline.querySelectorAll('.plan-card');
+        cards.forEach(function(el) { el.remove(); });
+
+        if (planData.length === 0) {
+            var emptyEl = timeline.querySelector('.planner-empty');
+            if (!emptyEl) {
+                timeline.innerHTML = '<div class="planner-empty" id="plannerEmpty"><div class="planner-empty-icon"></div><div class="planner-empty-title">还没有规划任何竞赛</div><div class="planner-empty-desc">先从竞赛库添加竞赛，再点 AI 详细规划</div></div>';
+            }
+            return;
+        }
+
+        var emptyEl = timeline.querySelector('.planner-empty');
+        if (emptyEl) emptyEl.remove();
+
+        var sorted = planData.slice().sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
+
+        sorted.forEach(function(item, idx) {
+            var itemPhase = getPhase(item.deadlineDate);
+            var daysLeft = item.deadlineDate ? Math.ceil((new Date(item.deadlineDate) - TODAY) / 86400000) : null;
+            var deadlineDisplay = item.deadlineDate || '未设定';
+            var daysStr = '';
+            if (daysLeft !== null) {
+                daysStr = daysLeft >= 0 ? '（剩 ' + daysLeft + ' 天）' : '（已截止 ' + Math.abs(daysLeft) + ' 天）';
+            }
+
+            var levelBadge = item.level ? '<span class="badge" style="margin-left:8px">' + escapeHtml(item.level) + '</span>' : '';
+
+            var progress = calcProgress(item.phases);
+            var progressSection = '';
+            if (item.phases && item.phases.length > 0) {
+                progressSection = '<div class="plan-progress-section"><div class="plan-progress-header"><span>完成进度</span><span>' + progress + '%</span></div><div class="plan-progress-bar-wrap"><div class="plan-progress-fill" style="width:' + progress + '%"></div></div></div>';
+            }
+
+            var phasesHtml = '';
+            if (item.phases && item.phases.length > 0) {
+                phasesHtml = item.phases.map(function(p) {
+                    var dClass = p.done ? ' done' : '';
+                    return '<div class="phase-row' + dClass + '" data-phase-id="' + p.id + '">'
+                        + '<div class="phase-checkbox" onclick="togglePhaseDone(\'' + item.id + '\', \'' + p.id + '\')">' + (p.done ? '✓' : '') + '</div>'
+                        + '<div class="phase-content">'
+                        + '<div class="phase-title">' + escapeHtml(p.title) + '</div>'
+                        + '<div class="phase-meta"><span>' + (p.startDate || '?') + ' ~ ' + (p.endDate || '?') + '</span></div>'
+                        + (p.desc ? '<div class="phase-desc">' + escapeHtml(p.desc) + '</div>' : '')
+                        + '</div>'
+                        + '<div class="phase-mini-actions">'
+                        + '<button class="phase-mini-btn" title="编辑" onclick="event.stopPropagation();editPhase(\'' + item.id + '\', \'' + p.id + '\')">编辑</button>'
+                        + '<button class="phase-mini-btn del" title="删除" onclick="event.stopPropagation();deletePhase(\'' + item.id + '\', \'' + p.id + '\')">×</button>'
+                        + '</div>'
+                        + '</div>'
+                        + '<div class="phase-edit-inline" id="phaseEdit-' + p.id + '"></div>';
+                }).join('');
+            }
+
+            var div = document.createElement('div');
+            div.className = 'plan-card';
+            div.setAttribute('data-plan-id', item.id);
+            div.innerHTML = ''
+                + '<div class="plan-card-header" onclick="togglePlanExpand(\'' + item.id + '\')">'
+                + '<div class="plan-card-num">' + (idx + 1) + '</div>'
+                + '<div class="plan-card-info">'
+                + '<div class="plan-card-name">' + escapeHtml(item.name) + levelBadge + '</div>'
+                + '<div class="plan-card-meta">'
+                + (item.compId ? '<span>竞赛库' + (item.source === 'ai' ? ' · AI推荐' : '') + '</span>' : '<span>自定义</span>')
+                + '<span>截止: ' + deadlineDisplay + ' ' + daysStr + '</span>'
+                + (item.prepareStart ? '<span>准备: ' + item.prepareStart + '</span>' : '')
+                + (item.notes ? '<span>备注: ' + escapeHtml(item.notes) + '</span>' : '')
+                + '</div>'
+                + '</div>'
+                + '<div class="plan-card-badges">'
+                + '<span class="plan-card-phase-tag phase-tag-' + itemPhase + '">' + phaseLabel(itemPhase) + '</span>'
+                + '</div>'
+                + '<div class="plan-card-actions-header">'
+                + '<button class="plan-card-act-btn ai" onclick="event.stopPropagation();runSingleAiPlan(\'' + item.id + '\')">AI规划</button>'
+                + '<button class="plan-card-act-btn txt" onclick="event.stopPropagation();movePlanItem(\'' + item.id + '\', -1)">上移</button>'
+                + '<button class="plan-card-act-btn txt" onclick="event.stopPropagation();movePlanItem(\'' + item.id + '\', 1)">下移</button>'
+                + '<button class="plan-card-act-btn txt" onclick="event.stopPropagation();editPlanItem(\'' + item.id + '\')">编辑</button>'
+                + '<button class="plan-card-act-btn txt del" onclick="event.stopPropagation();deletePlanItem(\'' + item.id + '\')">删除</button>'
+                + '<span class="plan-card-expand-text">展开</span>'
+                + '</div>'
+                + '</div>'
+                + '<div class="plan-card-body">'
+                + progressSection
+                + (item.phases && item.phases.length > 0 ? '<div class="phase-list">' + phasesHtml + '</div>' : '<div style="padding:12px 0;color:#555;font-size:12px;text-align:center;">暂无阶段，点击上方 AI规划 自动生成</div>')
+                + '<div class="add-phase-row" onclick="event.stopPropagation();addPhase(\'' + item.id + '\')">+ 添加阶段</div>'
+                + '</div>'
+            ;
+            timeline.appendChild(div);
+        });
+    }
+
+    function togglePlanExpand(planId) {
+        var card = document.querySelector('.plan-card[data-plan-id="' + planId + '"]');
+        if (!card) return;
+        card.classList.toggle('expanded');
+        var txt = card.querySelector('.plan-card-expand-text');
+        if (txt) {
+            txt.textContent = card.classList.contains('expanded') ? '收起' : '展开';
+        }
+    }
+
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    function addToPlan(comp) {
+        var exists = planData.some(function(p) { return p.compId === comp.id; });
+        if (exists) {
+            toast('该竞赛已在规划中');
+            return;
+        }
+        var deadlineDate = '';
+        if (comp.years && comp.years.length > 0) {
+            var sorted = comp.years.slice().sort(function(a, b) { return b.year - a.year; });
+            for (var i = 0; i < sorted.length; i++) {
+                if (sorted[i].deadlineDate) {
+                    deadlineDate = sorted[i].deadlineDate;
+                    break;
+                }
+            }
+        }
+        planData.push({
+            id: genId(),
+            compId: comp.id,
+            name: comp.name,
+            level: comp.level,
+            deadlineDate: deadlineDate,
+            prepareStart: '',
+            notes: '',
+            source: 'manual',
+            order: planData.length,
+            phases: []
+        });
+        savePlan();
+        toast('已添加到规划: ' + comp.name);
+    }
+
+    function movePlanItem(id, delta) {
+        var idx = -1;
+        for (var i = 0; i < planData.length; i++) {
+            if (planData[i].id === id) { idx = i; break; }
+        }
+        if (idx < 0) return;
+        var newIdx = idx + delta;
+        if (newIdx < 0 || newIdx >= planData.length) return;
+        var tmp = planData[idx].order;
+        planData[idx].order = planData[newIdx].order;
+        planData[newIdx].order = tmp;
+        savePlan();
+    }
+
+    function deletePlanItem(id) {
+        if (!confirm('确定从规划中移除该竞赛吗？')) return;
+        planData = planData.filter(function(p) { return p.id !== id; });
+        planData.forEach(function(p, i) { p.order = i; });
+        savePlan();
+        toast('已从规划中移除');
+    }
+
+    function editPlanItem(id) {
+        var item = null;
+        for (var i = 0; i < planData.length; i++) {
+            if (planData[i].id === id) { item = planData[i]; break; }
+        }
+        if (!item) return;
+        planEditingId = id;
+        showEditModal(item);
+    }
+
+    function clearPlan() {
+        if (!confirm('确定清空全部规划吗？此操作不可恢复。')) return;
+        planData = [];
+        savePlan();
+        toast('规划已清空');
+    }
+
+    // ── 阶段 CRUD ──
+    function findPlanItem(id) {
+        for (var i = 0; i < planData.length; i++) {
+            if (planData[i].id === id) return planData[i];
+        }
+        return null;
+    }
+
+    function addPhase(planId) {
+        var item = findPlanItem(planId);
+        if (!item) return;
+        if (!item.phases) item.phases = [];
+        var newPhase = {
+            id: 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+            title: '新阶段',
+            startDate: '',
+            endDate: '',
+            desc: '',
+            done: false
+        };
+        item.phases.push(newPhase);
+        savePlan();
+        // 展开卡片并进入编辑
+        var card = document.querySelector('.plan-card[data-plan-id="' + planId + '"]');
+        if (card) card.classList.add('expanded');
+        setTimeout(function() { editPhase(planId, newPhase.id); }, 150);
+    }
+
+    function editPhase(planId, phaseId) {
+        document.querySelectorAll('.phase-edit-inline.show').forEach(function(el) { el.classList.remove('show'); });
+
+        var item = findPlanItem(planId);
+        if (!item) return;
+        var ph = item.phases.find(function(p) { return p.id === phaseId; });
+        if (!ph) return;
+
+        editingPhaseItemId = planId;
+        editingPhaseId = phaseId;
+
+        var editContainer = document.getElementById('phaseEdit-' + phaseId);
+        if (!editContainer) return;
+        editContainer.innerHTML = ''
+            + '<input type="text" id="phaseEditTitle" value="' + escapeHtml(ph.title) + '" placeholder="阶段名称">'
+            + '<div class="phase-edit-row">'
+            + '<input type="date" id="phaseEditStart" value="' + (ph.startDate || '') + '">'
+            + '<input type="date" id="phaseEditEnd" value="' + (ph.endDate || '') + '">'
+            + '</div>'
+            + '<textarea id="phaseEditDesc" placeholder="阶段描述...">' + escapeHtml(ph.desc || '') + '</textarea>'
+            + '<div class="phase-edit-btns">'
+            + '<button onclick="cancelPhaseEdit()">取消</button>'
+            + '<button class="save" onclick="savePhaseEdit()">保存</button>'
+            + '</div>';
+        editContainer.classList.add('show');
+    }
+
+    function cancelPhaseEdit() {
+        editingPhaseItemId = null;
+        editingPhaseId = null;
+        savePlan();
+    }
+
+    function savePhaseEdit() {
+        var item = findPlanItem(editingPhaseItemId);
+        if (!item) return;
+        var ph = item.phases.find(function(p) { return p.id === editingPhaseId; });
+        if (!ph) return;
+
+        ph.title = document.getElementById('phaseEditTitle').value.trim() || '未命名阶段';
+        ph.startDate = document.getElementById('phaseEditStart').value;
+        ph.endDate = document.getElementById('phaseEditEnd').value;
+        ph.desc = document.getElementById('phaseEditDesc').value.trim();
+
+        editingPhaseItemId = null;
+        editingPhaseId = null;
+        savePlan();
+    }
+
+    function deletePhase(planId, phaseId) {
+        if (!confirm('确定删除这个阶段吗？')) return;
+        var item = findPlanItem(planId);
+        if (!item) return;
+        item.phases = item.phases.filter(function(p) { return p.id !== phaseId; });
+        savePlan();
+    }
+
+    function togglePhaseDone(planId, phaseId) {
+        var item = findPlanItem(planId);
+        if (!item) return;
+        var ph = item.phases.find(function(p) { return p.id === phaseId; });
+        if (!ph) return;
+        ph.done = !ph.done;
+        savePlan();
+    }
+
+    // ── 编辑弹窗 ──
+    function showEditModal(item) {
+        var overlay = document.createElement('div');
+        overlay.className = 'planner-modal-overlay';
+        overlay.id = 'editModalOverlay';
+        overlay.innerHTML = ''
+            + '<div class="planner-modal">'
+            + '<div class="planner-modal-header">'
+            + '<span>' + (item.id ? '编辑规划条目' : '自定义竞赛') + '</span>'
+            + '<button class="planner-modal-close" onclick="closeModal()">' + String.fromCharCode(215) + '</button>'
+            + '</div>'
+            + '<div class="edit-form">'
+            + '<label>竞赛名称</label>'
+            + '<input type="text" id="editName" value="' + escapeHtml(item.name || '') + '" placeholder="竞赛名称">'
+            + '<label>级别</label>'
+            + '<input type="text" id="editLevel" value="' + escapeHtml(item.level || '') + '" placeholder="如：全国性、校级">'
+            + '<label>截止日期</label>'
+            + '<input type="date" id="editDeadline" value="' + (item.deadlineDate || '') + '">'
+            + '<label>准备开始日期</label>'
+            + '<input type="date" id="editPrepareStart" value="' + (item.prepareStart || '') + '">'
+            + '<label>备注</label>'
+            + '<textarea id="editNotes" placeholder="备考重点、资料链接等...">' + escapeHtml(item.notes || '') + '</textarea>'
+            + '<div class="edit-form-btns">'
+            + '<button onclick="closeModal()">取消</button>'
+            + '<button class="save" onclick="saveEdit()">保存</button>'
+            + '</div>'
+            + '</div>'
+            + '</div>'
+        ;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) closeModal();
+        });
+    }
+
+    function closeModal() {
+        var overlay = document.getElementById('editModalOverlay');
+        if (overlay) overlay.remove();
+        var pickerOverlay = document.getElementById('pickerModalOverlay');
+        if (pickerOverlay) pickerOverlay.remove();
+        planEditingId = null;
+    }
+
+    function saveEdit() {
+        var name = document.getElementById('editName').value.trim();
+        if (!name) { toast('请输入竞赛名称'); return; }
+
+        var data = {
+            name: name,
+            level: document.getElementById('editLevel').value.trim(),
+            deadlineDate: document.getElementById('editDeadline').value,
+            prepareStart: document.getElementById('editPrepareStart').value,
+            notes: document.getElementById('editNotes').value.trim()
+        };
+
+        if (planEditingId) {
+            for (var i = 0; i < planData.length; i++) {
+                if (planData[i].id === planEditingId) {
+                    planData[i].name = data.name;
+                    planData[i].level = data.level;
+                    planData[i].deadlineDate = data.deadlineDate;
+                    planData[i].prepareStart = data.prepareStart;
+                    planData[i].notes = data.notes;
+                    break;
+                }
+            }
+        } else {
+            planData.push({
+                id: genId(),
+                compId: null,
+                name: data.name,
+                level: data.level,
+                deadlineDate: data.deadlineDate,
+                prepareStart: data.prepareStart,
+                notes: data.notes,
+                source: 'manual',
+                order: planData.length,
+                phases: []
+            });
+        }
+        savePlan();
+        closeModal();
+        toast('规划已更新');
+    }
+
+    function openCustomForm() {
+        planEditingId = null;
+        showEditModal({});
+    }
+
+    // ── 竞赛库选择弹窗 ──
+    function openCompPicker() {
+        var overlay = document.createElement('div');
+        overlay.className = 'planner-modal-overlay';
+        overlay.id = 'pickerModalOverlay';
+
+        var listHtml = '';
+        groupedCompetitions.forEach(function(comp) {
+            var deadline = '';
+            if (comp.years && comp.years.length > 0) {
+                var sorted = comp.years.slice().sort(function(a, b) { return b.year - a.year; });
+                for (var i = 0; i < sorted.length; i++) {
+                    if (sorted[i].deadlineStr) { deadline = sorted[i].deadlineStr; break; }
+                }
+            }
+            listHtml += ''
+                + '<div class="pick-item" data-comp-id="' + comp.id + '" onclick="pickComp(' + comp.id + ')">'
+                + '<div>'
+                + '<div class="pick-name">' + escapeHtml(comp.name) + '</div>'
+                + '<div class="pick-info">' + comp.level + ' · ' + comp.subject + (deadline ? ' · 截止: ' + deadline : '') + '</div>'
+                + '</div>'
+                + '<span class="pick-add">+</span>'
+                + '</div>'
+            ;
+        });
+
+        overlay.innerHTML = ''
+            + '<div class="planner-modal">'
+            + '<div class="planner-modal-header">'
+            + '<span>从竞赛库添加</span>'
+            + '<button class="planner-modal-close" onclick="closeModal()">' + String.fromCharCode(215) + '</button>'
+            + '</div>'
+            + '<div class="planner-modal-search">'
+            + '<input type="text" id="pickerSearch" placeholder="搜索竞赛名称..." oninput="filterPicker()">'
+            + '</div>'
+            + '<div class="planner-modal-list" id="pickerList">' + listHtml + '</div>'
+            + '</div>'
+            + '</div>'
+        ;
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) closeModal();
+        });
+    }
+
+    function filterPicker() {
+        var query = (document.getElementById('pickerSearch') || {}).value || '';
+        var lower = query.toLowerCase();
+        var items = document.querySelectorAll('#pickerList .pick-item');
+        items.forEach(function(item) {
+            var text = item.textContent.toLowerCase();
+            item.style.display = text.indexOf(lower) >= 0 ? '' : 'none';
+        });
+    }
+
+    function pickComp(compId) {
+        var comp = groupedCompetitions.find(function(c) { return c.id === compId; });
+        if (!comp) return;
+        addToPlan(comp);
+        closeModal();
+    }
+
+    // ── AI 详细规划（为已选竞赛生成阶段） ──
+    function runAiPlanner() {
+        if (planData.length === 0) { toast('请先从竞赛库添加竞赛到规划中'); return; }
+
+        var btn = document.getElementById('planAiBtn');
+        if (btn) { btn.classList.add('loading'); btn.disabled = true; }
+
+        var planSummary = planData.map(function(p, i) {
+            return (i + 1) + '. ' + p.name + ' | 级别:' + (p.level || '未指定') + ' | 截止日期:' + (p.deadlineDate || '未设定');
+        }).join('\n');
+
+        var systemPrompt = '你是一个竞赛备赛规划专家。用户已经选择了以下竞赛，请为每个竞赛制定详细的备赛阶段计划。\n\n'
+            + '用户已选择的竞赛：\n' + planSummary + '\n\n'
+            + '请为每个竞赛规划4-6个具体阶段，从今天(2026年5月18日)开始到截止日期。每个阶段要包含：\n'
+            + '- title: 阶段名称（简洁，如"基础知识复习"、"专项训练"、"模拟冲刺"）\n'
+            + '- startDate: 开始日期 YYYY-MM-DD\n'
+            + '- endDate: 结束日期 YYYY-MM-DD\n'
+            + '- desc: 该阶段的具体任务描述（1-2句话，要有可操作性）\n\n'
+            + '请返回纯JSON格式（不要markdown代码块），结构如下：\n'
+            + '{"plans": [{"name": "竞赛名称（必须与上面完全一致）", "phases": [{"title":"...","startDate":"...","endDate":"...","desc":"..."}]}]}\n'
+            + '要求：1) 日期合理且连续 2) 阶段名称具体 3) 任务描述可执行 4) 考虑用户年级和专业';
+
+        fetch('/api/ai/chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'deepseek-v4-flash',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: '请为我的竞赛列表制定详细备赛计划。' }
+                ],
+                temperature: 0.7,
+                max_tokens: 4096
+            })
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('API 请求失败 (' + res.status + ')');
+            return res.json();
+        })
+        .then(function(data) {
+            var content = data.choices[0].message.content;
+            var jsonStr = content;
+            var m = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+            if (m) jsonStr = m[1];
+            var result = JSON.parse(jsonStr.trim());
+            return result;
+        })
+        .then(function(result) {
+            if (!result.plans || !result.plans.length) {
+                throw new Error('AI 未返回有效规划');
+            }
+            var updated = 0;
+            result.plans.forEach(function(aiPlan) {
+                // 通过名称匹配规划中的竞赛
+                var item = planData.find(function(p) { return p.name === aiPlan.name; });
+                if (!item) return;
+                if (!aiPlan.phases || !aiPlan.phases.length) return;
+                // 用AI生成的阶段替换
+                item.phases = aiPlan.phases.map(function(ph) {
+                    return {
+                        id: 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                        title: ph.title,
+                        startDate: ph.startDate || '',
+                        endDate: ph.endDate || '',
+                        desc: ph.desc || '',
+                        done: false
+                    };
+                });
+                item.source = 'ai';
+                updated++;
+            });
+            savePlan();
+            // 展开第一张卡片
+            if (planData.length > 0) {
+                setTimeout(function() {
+                    var firstCard = document.querySelector('.plan-card[data-plan-id="' + planData[0].id + '"]');
+                    if (firstCard) firstCard.classList.add('expanded');
+                }, 200);
+            }
+            toast('AI 已为 ' + updated + ' 个竞赛生成详细阶段规划');
+        })
+        .catch(function(err) {
+            console.error('AI 规划失败:', err);
+            toast('AI 规划失败: ' + (err.message || '未知错误'));
+        })
+        .finally(function() {
+            if (btn) { btn.classList.remove('loading'); btn.disabled = false; }
+        });
+    }
+
+    // ── 单个竞赛 AI 规划 ──
+    function runSingleAiPlan(planId) {
+        var item = findPlanItem(planId);
+        if (!item) return;
+
+        var btn = document.querySelector('.plan-card[data-plan-id="' + planId + '"] .plan-card-act-btn.ai');
+        if (btn) { btn.disabled = true; btn.textContent = '规划中...'; }
+
+        var systemPrompt = '你是一个竞赛备赛规划专家。请为以下竞赛制定详细的备赛阶段计划。\n\n'
+            + '竞赛：' + item.name + ' | 级别：' + (item.level || '未指定') + ' | 截止日期：' + (item.deadlineDate || '未设定') + '\n\n'
+            + '请规划4-5个具体阶段，从今天(2026年5月18日)开始。返回纯JSON：\n'
+            + '{"phases": [{"title":"阶段名","startDate":"YYYY-MM-DD","endDate":"YYYY-MM-DD","desc":"具体任务描述"}]}';
+
+        fetch('/api/ai/chat/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'deepseek-v4-flash',
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: '请为"' + item.name + '"制定详细备赛计划。' }
+                ],
+                temperature: 0.7,
+                max_tokens: 2048
+            })
+        })
+        .then(function(res) {
+            if (!res.ok) throw new Error('API 请求失败');
+            return res.json();
+        })
+        .then(function(data) {
+            var content = data.choices[0].message.content;
+            var jsonStr = content;
+            var m = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+            if (m) jsonStr = m[1];
+            var result = JSON.parse(jsonStr.trim());
+            if (!result.phases || !result.phases.length) throw new Error('AI 未返回阶段');
+            item.phases = result.phases.map(function(ph) {
+                return {
+                    id: 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+                    title: ph.title,
+                    startDate: ph.startDate || '',
+                    endDate: ph.endDate || '',
+                    desc: ph.desc || '',
+                    done: false
+                };
+            });
+            item.source = 'ai';
+            savePlan();
+            // 展开卡片
+            setTimeout(function() {
+                var card = document.querySelector('.plan-card[data-plan-id="' + planId + '"]');
+                if (card) card.classList.add('expanded');
+            }, 200);
+            toast('已为"' + item.name + '"生成 ' + item.phases.length + ' 个备赛阶段');
+        })
+        .catch(function(err) {
+            console.error('AI 规划失败:', err);
+            toast('AI 规划失败: ' + (err.message || '未知错误'));
+        })
+        .finally(function() {
+            if (btn) { btn.disabled = false; btn.textContent = 'AI规划'; }
+        });
+    }
+
+</script>
+<script>
+window.CHAT_CONTEXT = {
+    title: 'AI 竞赛顾问',
+    welcome: '你好！我是 AI 竞赛顾问，<br>可以帮你分析、筛选、推荐适合的竞赛。<br>直接告诉我你的需求吧～',
+    prompts: ['我学计算机，想保研加分', '推荐零门槛高获奖率的竞赛', '最近30天截止的有哪些？', '适合大一大二参加的竞赛'],
+    dataLabel: '竞赛',
+    data: groupedCompetitions.map(function(c) {
+        return {
+            id: c.id,
+            名称: c.name,
+            级别: c.level,
+            学科: c.subject,
+            类型: c.type,
+            形式: c.format || '未指定',
+            面向对象: c.object || '未指定',
+            标签: c.tags || [],
+            人大专属: c.ruc || false,
+            历年: (c.years || []).map(function(y) { return y.year + '年 截止:' + (y.deadlineStr || '待定') + ' 举办:' + (y.period || '待定'); })
+        };
+    })
+};
+</script>
+<script src="chat-widget.js?v=2"></script>
+</body>
+</html>

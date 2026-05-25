@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的收藏 - 研途</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2D5A7B;
+            --primary-light: #4A7A9B;
+            --primary-dark: #1E4060;
+            --secondary: #E8F0F5;
+            --accent: #E07B54;
+            --success: #5B9A6B;
+            --warning: #D4A84B;
+            --danger: #C75B5B;
+            --text-primary: #2C3E50;
+            --text-secondary: #6B7C8A;
+            --text-muted: #9CA3AF;
+            --bg-main: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --bg-sidebar: #FFFFFF;
+            --border: #E2E8F0;
+            --border-light: #F1F5F9;
+            --shadow-sm: 0 1px 3px rgba(45, 90, 123, 0.04);
+            --shadow-md: 0 2px 8px rgba(45, 90, 123, 0.06);
+            --shadow-lg: 0 4px 16px rgba(45, 90, 123, 0.08);
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --mono: 'JetBrains Mono', monospace;
+            --serif: 'Noto Serif SC', serif;
+            --sans: 'Noto Sans SC', 'PingFang SC', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { background: var(--bg-main); color: var(--text-primary); font-family: var(--sans); overflow-x: hidden; }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-main);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        /* 选中文字样式 */
+        ::selection {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ── 顶部导航栏 ── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; height: 64px;
+            background: var(--bg-card); border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; padding: 0 28px; z-index: 1000;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-logo {
+            display: flex; align-items: center; gap: 10px;
+            font-family: var(--serif); font-size: 20px; font-weight: 600;
+            color: var(--primary);
+        }
+
+        .navbar-logo svg { width: 30px; height: 30px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: 40px;
+        }
+
+        .nav-link {
+            padding: 8px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .nav-link:hover {
+            background: var(--secondary);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ===== 主布局 ===== */
+        .main-container {
+            display: flex;
+            padding-top: 64px;
+            min-height: 100vh;
+        }
+
+        /* ===== 侧边栏 ===== */
+        .sidebar {
+            position: fixed;
+            top: 64px;
+            left: 0;
+            width: 280px;
+            height: calc(100vh - 64px);
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .sidebar-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            padding: 12px;
+            flex: 1;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .menu-item:hover {
+            background: var(--secondary);
+            color: var(--text-primary);
+        }
+
+        .menu-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .menu-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .menu-item .count {
+            margin-left: auto;
+            background: var(--border);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .menu-item.active .count {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .menu-divider {
+            height: 1px;
+            background: var(--border-light);
+            margin: 8px 16px;
+        }
+
+        /* 快速入口 */
+        .quick-actions {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+        }
+
+        .quick-action-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        /* ===== 主内容区 ===== */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 24px 32px;
+        }
+
+        /* 页面标题区 */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .page-icon {
+            width: 52px;
+            height: 52px;
+            background: var(--primary);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 22px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .page-title p {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        /* 视图切换按钮 */
+        .view-switch {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 4px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+
+        .view-btn {
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 13px;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-btn:hover {
+            color: var(--primary);
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stat-card.active {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(45, 90, 123, 0.03), rgba(45, 90, 123, 0.08));
+        }
+
+        .stat-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .stat-info {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* 筛选区域 */
+        .filters-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .tag:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .tag.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .result-count {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        /* 收藏卡片网格 */
+        .card-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .card-grid.grid-view {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+
+        .card-grid.list-view {
+            grid-template-columns: 1fr;
+        }
+
+        .favorite-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-light);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .favorite-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        /* 卡片头部 */
+        .card-header {
+            padding: 18px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .card-category {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .category-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .category-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-name {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .btn-unfav {
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            font-family: var(--sans);
+            border: 1px solid var(--danger);
+            border-radius: 20px;
+            background: rgba(199, 91, 91, 0.06);
+            color: var(--danger);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-unfav:hover {
+            background: var(--danger);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(199, 91, 91, 0.25);
+        }
+
+        /* 卡片内容 */
+        .card-body {
+            padding: 0 20px 18px;
+        }
+
+        .card-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .card-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-footer {
+            padding: 14px 20px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-main);
+        }
+
+        .card-tags {
+            display: flex;
+            gap: 6px;
+        }
+
+        .card-tag {
+            padding: 3px 10px;
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .tag-blue { background: var(--secondary); color: var(--primary); }
+
+        .card-date {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 列表视图样式 */
+        .list-view .favorite-card {
+            display: flex;
+            align-items: stretch;
+        }
+
+        .list-view .card-header {
+            flex: 0 0 auto;
+            min-width: 280px;
+            border-right: 1px solid var(--border-light);
+            border-bottom: none;
+        }
+
+        .list-view .card-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .list-view .card-footer {
+            flex: 0 0 auto;
+            min-width: 200px;
+            border-top: none;
+            border-left: 1px solid var(--border-light);
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            background: transparent;
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: var(--text-secondary);
+            display: none;
+        }
+
+        .empty-state.show {
+            display: block;
+        }
+
+        .empty-state i {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.4;
+            color: var(--text-muted);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .favorite-card {
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 240px;
+            }
+            .main-content {
+                margin-left: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+                transition: transform 0.3s ease;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .navbar-nav {
+                display: none;
+            }
+            .mobile-nav-toggle {
+                display: flex;
+            }
+            .card-grid.grid-view {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 移动端导航切换 */
+        .mobile-nav-toggle {
+            display: none;
+            margin-left: auto;
+            padding: 8px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* 遮罩层 */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 64px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
+            z-index: 999;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script>
+    (function(){if(localStorage.getItem('isLoggedIn')!=='true'){window.location.href='index.html';}})();
+    </script>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+        <div class="navbar-logo">
+            <a href="workspace.html" style="display:flex;align-items:center;gap:12px;color:inherit;text-decoration:none;">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor"><path d="M16 3L3 9v14h26V9L16 3z"/><path d="M12 28V18h8v10"/><path d="M3 9l13 6 13-6"/></svg>
+            研途
+            </a>
+        </div>
+        <div class="navbar-nav">
+            <a href="workspace.html" class="nav-link">工作台</a>
+            <a href="treasure.html" class="nav-link">科研宝藏库</a>
+            <a href="competition.html" class="nav-link">竞赛雷达</a>
+            <a href="favorites.html" class="nav-link active">我的收藏</a>
+        </div>
+        <button class="nav-logout-btn" onclick="localStorage.removeItem('isLoggedIn');localStorage.removeItem('username');fetch('/api/auth/logout/',{method:'POST'});window.location.href='index.html?logout=1';" title="退出登录" style="margin-left:auto;padding:6px 14px;font-size:13px;font-weight:500;color:#6B7C8A;background:none;border:1px solid #E2E8F0;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出</span>
+        </button>
+        <button class="mobile-nav-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+    </nav>
+
+    <!-- 侧边栏遮罩 -->
+    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3 class="sidebar-title">收藏分类</h3>
+            </div>
+            <div class="sidebar-menu">
+                <a class="menu-item active" data-category="all" onclick="filterByCategory('all')">
+                    <i class="fas fa-star"></i>
+                    <span>全部收藏</span>
+                    <span class="count" id="count-all">0</span>
+                </a>
+                <div class="menu-divider"></div>
+                <a class="menu-item" data-category="treasure" onclick="filterByCategory('treasure')">
+                    <i class="fas fa-gem"></i>
+                    <span>科研宝藏库</span>
+                    <span class="count" id="count-treasure">0</span>
+                </a>
+                <a class="menu-item" data-category="competition" onclick="filterByCategory('competition')">
+                    <i class="fas fa-trophy"></i>
+                    <span>学科竞赛</span>
+                    <span class="count" id="count-competition">0</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面标题区 -->
+            <div class="page-header">
+                <div class="header-left">
+                    <div class="page-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="page-title">
+                        <h1>我的收藏</h1>
+                        <p>收藏对您重要的学术资源，方便随时查阅</p>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="view-switch">
+                        <button class="view-btn active" data-view="grid" onclick="switchView('grid')">
+                            <i class="fas fa-th-large"></i> 网格
+                        </button>
+                        <button class="view-btn" data-view="list" onclick="switchView('list')">
+                            <i class="fas fa-list"></i> 列表
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 统计卡片 -->
+            <div class="stats-grid">
+                <div class="stat-card" onclick="filterByCategory('all')">
+                    <div class="stat-icon" style="background: var(--secondary); color: var(--primary);">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-total">0</div>
+                        <div class="stat-label">全部收藏</div>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="filterByCategory('treasure')">
+                    <div class="stat-icon" style="background: var(--secondary); color: var(--primary);">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-treasure">0</div>
+                        <div class="stat-label">科研宝藏库</div>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="filterByCategory('competition')">
+                    <div class="stat-icon" style="background: var(--secondary); color: var(--primary);">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="stat-competition">0</div>
+                        <div class="stat-label">学科竞赛</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 筛选标签 -->
+            <div class="filters-section">
+                <div class="filter-tags">
+                    <span class="tag active" data-category="all" onclick="filterByCategory('all')">全部</span>
+                    <span class="tag" data-category="treasure" onclick="filterByCategory('treasure')">科研宝藏库</span>
+                    <span class="tag" data-category="competition" onclick="filterByCategory('competition')">学科竞赛</span>
+                </div>
+                <span class="result-count" id="result-count">共 0 条收藏</span>
+            </div>
+
+            <!-- 收藏卡片 -->
+            <div class="card-grid grid-view" id="favorites-container">
+                <!-- 动态渲染收藏卡片 -->
+            </div>
+
+            <!-- 空状态 -->
+            <div class="empty-state" id="empty-state">
+                <i class="far fa-heart"></i>
+                <h3>暂无收藏</h3>
+                <p>开始收藏对您重要的学术资源吧</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 收藏数据管理
+        const STORAGE_KEY = 'research_favorites';
+
+        // 获取收藏数据
+        function getFavorites() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            return data ? JSON.parse(data) : [];
+        }
+
+        // 保存收藏数据
+        function saveFavorites(favorites) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites));
+        }
+
+        // 取消收藏（同时同步回原始存储）
+        function removeFavorite(id) {
+            const favorites = getFavorites();
+            const filtered = favorites.filter(item => item.id !== id);
+            saveFavorites(filtered);
+
+            // 同步回原始存储，保持各页面收藏状态一致
+            if (id.startsWith('comp-')) {
+                const radarFavs = JSON.parse(localStorage.getItem('radarFavs') || '[]');
+                const compId = id.replace('comp-', '');
+                localStorage.setItem('radarFavs', JSON.stringify(radarFavs.filter(f => String(f) !== String(compId))));
+            } else if (id.startsWith('treasure-')) {
+                const treasureFavs = JSON.parse(localStorage.getItem('treasureFavs') || '[]');
+                const toolName = id.replace('treasure-', '');
+                localStorage.setItem('treasureFavs', JSON.stringify(treasureFavs.filter(f => f !== toolName)));
+            }
+
+            renderFavorites();
+            updateStats();
+        }
+
+        // 分类配置
+        const categoryConfig = {
+            treasure: {
+                icon: 'fa-gem',
+                iconBg: 'var(--secondary)',
+                iconColor: 'var(--primary)',
+                name: '科研宝藏库',
+                tagClass: 'tag-blue'
+            },
+            competition: {
+                icon: 'fa-trophy',
+                iconBg: 'var(--secondary)',
+                iconColor: 'var(--primary)',
+                name: '学科竞赛',
+                tagClass: 'tag-blue'
+            },
+            _default: {
+                icon: 'fa-star',
+                iconBg: 'var(--secondary)',
+                iconColor: 'var(--primary)',
+                name: '收藏',
+                tagClass: 'tag-blue'
+            }
+        };
+
+        // 当前筛选状态
+        let currentCategory = 'all';
+        let currentView = 'grid';
+
+        // 筛选分类
+        function filterByCategory(category) {
+            currentCategory = category;
+
+            // 更新侧边栏选中状态
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.category === category);
+            });
+
+            // 更新标签选中状态
+            document.querySelectorAll('.tag').forEach(tag => {
+                tag.classList.toggle('active', tag.dataset.category === category);
+            });
+
+            // 更新统计卡片选中状态 —— "全部"也高亮第一张卡片
+            document.querySelectorAll('.stat-card').forEach(card => {
+                const cardCat = card.getAttribute('onclick') || '';
+                const match = cardCat.match(/filterByCategory\('(\w+)'\)/);
+                card.classList.toggle('active', match && match[1] === category);
+            });
+
+            renderFavorites();
+        }
+
+        // 切换视图
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === view);
+            });
+            document.getElementById('favorites-container').className = `card-grid ${view}-view`;
+        }
+
+        // 渲染收藏卡片
+        function renderFavorites() {
+            const favorites = getFavorites();
+
+            // 更新统计数据（每次渲染都刷新，保证实时准确）
+            updateStats();
+
+            const container = document.getElementById('favorites-container');
+            const emptyState = document.getElementById('empty-state');
+
+            // 筛选数据："全部"展示 treasure+competition 两个分类的并集
+            const filtered = currentCategory === 'all'
+                ? favorites.filter(item => item.category === 'treasure' || item.category === 'competition')
+                : favorites.filter(item => item.category === currentCategory);
+
+            // 更新结果计数
+            document.getElementById('result-count').textContent = `共 ${filtered.length} 条收藏`;
+
+            // 显示/隐藏空状态
+            if (filtered.length === 0) {
+                container.style.display = 'none';
+                emptyState.classList.add('show');
+
+                // 如果是全部收藏为空，显示引导按钮
+                if (currentCategory === 'all') {
+                    emptyState.querySelector('.btn').href = 'treasure.html';
+                } else {
+                    // 如果是某个分类为空，显示返回全部
+                    emptyState.querySelector('h3').textContent = '该分类暂无收藏';
+                    emptyState.querySelector('p').textContent = '去其他页面收藏更多内容吧';
+                }
+            } else {
+                container.style.display = 'grid';
+                emptyState.classList.remove('show');
+
+                // 按收藏时间倒序排列
+                filtered.sort((a, b) => new Date(b.favoritedAt) - new Date(a.favoritedAt));
+
+                container.innerHTML = filtered.map((item, index) => {
+                    const config = categoryConfig[item.category] || categoryConfig._default;
+                    const tags = item.tags || [];
+
+                    return `
+                        <div class="favorite-card" data-category="${item.category}" style="animation-delay: ${index * 50}ms">
+                            <div class="card-header">
+                                <div class="card-category">
+                                    <div class="category-icon" style="background: ${config.iconBg}; color: ${config.iconColor};">
+                                        <i class="fas ${config.icon}"></i>
+                                    </div>
+                                    <div class="category-info">
+                                        <span class="category-name">${config.name}</span>
+                                        <span class="card-title">${escapeHtml(item.title)}</span>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn-unfav" onclick="event.stopPropagation(); removeFavorite('${item.id}')">
+                                        <i class="fas fa-heart-broken"></i> 取消收藏
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-desc">${escapeHtml(item.description || '暂无描述')}</p>
+                                <div class="card-meta">
+                                    ${item.meta ? Object.entries(item.meta).map(([key, value]) =>
+                                        `<span><i class="fas ${getMetaIcon(key)}"></i> ${escapeHtml(value)}</span>`
+                                    ).join('') : ''}
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-tags">
+                                    ${tags.slice(0, 2).map(tag => `<span class="card-tag ${config.tagClass}">${escapeHtml(tag)}</span>`).join('')}
+                                </div>
+                                <span class="card-date">收藏于 ${formatDate(item.favoritedAt)}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // 格式化日期
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // 获取元数据图标
+        function getMetaIcon(key) {
+            const iconMap = {
+                'year': 'fa-calendar',
+                'author': 'fa-user',
+                'citations': 'fa-star',
+                'status': 'fa-spinner',
+                'level': 'fa-medal',
+                'date': 'fa-calendar',
+                'time': 'fa-clock',
+                'tag': 'fa-tag'
+            };
+            return iconMap[key] || 'fa-circle';
+        }
+
+        // 更新统计数据
+        function updateStats() {
+            const favorites = getFavorites();
+
+            // 计算各分类数量（all = treasure + competition，保证两者之和永远等于全部）
+            const treasureCount = favorites.filter(item => item.category === 'treasure').length;
+            const competitionCount = favorites.filter(item => item.category === 'competition').length;
+            const counts = {
+                all: treasureCount + competitionCount,
+                treasure: treasureCount,
+                competition: competitionCount
+            };
+
+            // 更新侧边栏计数
+            Object.keys(counts).forEach(cat => {
+                const el = document.getElementById(`count-${cat}`);
+                if (el) el.textContent = counts[cat];
+            });
+
+            // 更新统计卡片
+            document.getElementById('stat-total').textContent = counts.all;
+            document.getElementById('stat-treasure').textContent = counts.treasure;
+            document.getElementById('stat-competition').textContent = counts.competition;
+        }
+
+        // 移动端侧边栏切换
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('show');
+        }
+
+        // ── 从旧存储迁移收藏到统一存储（轻量版，仅处理已有 research_favorites 为空且旧存储有数据的情况）──
+        function migrateFavorites() {
+            const existing = getFavorites();
+            if (existing.length > 0) return; // 已有数据，跳过迁移
+
+            const migrated = [];
+            let hasNew = false;
+
+            // 尝试迁移竞赛收藏 (radarFavs)
+            try {
+                const radarFavs = JSON.parse(localStorage.getItem('radarFavs') || '[]');
+                radarFavs.forEach(function(compId) {
+                    migrated.push({
+                        id: 'comp-' + compId,
+                        category: 'competition',
+                        title: '竞赛收藏 #' + compId,
+                        description: '从竞赛雷达收藏（点击竞赛雷达页面刷新获取详情）',
+                        meta: {},
+                        tags: [],
+                        favoritedAt: new Date().toISOString().split('T')[0]
+                    });
+                    hasNew = true;
+                });
+            } catch(e) {}
+
+            // 尝试迁移宝藏库收藏 (treasureFavs)
+            try {
+                const treasureFavs = JSON.parse(localStorage.getItem('treasureFavs') || '[]');
+                treasureFavs.forEach(function(name) {
+                    migrated.push({
+                        id: 'treasure-' + name,
+                        category: 'treasure',
+                        title: name,
+                        description: '从科研宝藏库收藏（点击宝藏库页面刷新获取详情）',
+                        meta: {},
+                        tags: [],
+                        favoritedAt: new Date().toISOString().split('T')[0]
+                    });
+                    hasNew = true;
+                });
+            } catch(e) {}
+
+            if (hasNew) {
+                saveFavorites(migrated);
+            }
+        }
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            migrateFavorites();
+            renderFavorites();
+            updateStats();
+        });
+    </script>
+</body>
+</html>
